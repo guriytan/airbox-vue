@@ -1,0 +1,135 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+.container {
+  //position: relative;
+  margin: 10% auto;
+  width: 600px;
+  border-radius: 15px;
+  box-shadow: 0 20px 50px 0 rgb(59, 45, 159);
+  background-color: rgb(95, 76, 194);
+
+  .left-container {
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    padding: 60px;
+    background-image: linear-gradient(to bottom right, rgb(118, 76, 163), rgb(92, 103, 211));
+
+    .title {
+      color: #fff;
+      font-size: 18px;
+
+      span {
+        border-bottom: 3px solid rgb(237, 221, 22);
+      }
+    }
+
+    .input-container {
+      padding: 20px 0;
+
+      input {
+        border: 0;
+        background: none;
+        outline: 0;
+        color: #fff;
+        margin: 20px 0;
+        display: block;
+        width: 100%;
+        padding: 5px 0;
+        transition: .2s;
+        border-bottom: 1px solid rgb(199, 191, 219);
+
+        &:hover {
+          border-bottom-color: #fff;
+        }
+      }
+
+      .post {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 200;
+        color: #fff;
+        height: 100%;
+        text-align: center;
+        position: relative;
+        margin-top: 15%;
+        margin-left: 15%;
+
+        span {
+          border: 1px solid rgb(237, 221, 22);
+          padding: 10px;
+          line-height: 25px;
+          border-radius: 25px;
+          bottom: 10px;
+          transition: .2s;
+          cursor: pointer;
+
+          &:hover {
+            background-color: rgb(237, 221, 22);
+            color: rgb(95, 76, 194);
+          }
+        }
+      }
+    }
+
+    .action-container {
+      font-size: 15px;
+      font-weight: 200;
+      color: #fff;
+
+      span {
+        border: 1px solid rgb(237, 221, 22);
+        padding: 10px;
+        line-height: 25px;
+        border-radius: 25px;
+        transition: .2s;
+        cursor: pointer;
+
+        &:hover {
+          background-color: rgb(237, 221, 22);
+          color: rgb(95, 76, 194);
+        }
+      }
+
+      a {
+        font-size: 14px;
+        transition: .2s;
+        color: rgb(199, 191, 219);
+        cursor: pointer;
+        text-decoration: none;
+
+        &:hover {
+          color: #fff;
+        }
+      }
+    }
+  }
+
+  .right-container {
+    height: 100%;
+    vertical-align: top;
+    padding: 60px 0;
+    width: 100%;
+
+    .register-container {
+      text-align: center;
+
+      span a {
+        border-bottom: 3px solid rgb(237, 221, 22);
+        color: #fff;
+        font-size: 18px;
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+::-webkit-input-placeholder {
+  color: rgb(199, 191, 219);
+}
