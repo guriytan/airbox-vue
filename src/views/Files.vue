@@ -8,7 +8,7 @@
       <el-card class="path-card">
         <el-breadcrumb separator="/">
           <el-breadcrumb-item>
-            <svg-icon icon-class="refresh" class="title-icon"></svg-icon>
+            <svg-icon icon-class="refresh" class="title-icon" @click="mountData(folderID)"></svg-icon>
           </el-breadcrumb-item>
           <el-breadcrumb-item><span @click="mountData()">全部文件</span></el-breadcrumb-item>
           <el-breadcrumb-item v-for="(path, index) in paths" :key="index" @click.native="mountData(path.ID)">
@@ -33,10 +33,10 @@
               <el-dropdown v-if="typeof scope.row.Type === 'undefined'" placement="bottom-end">
                 <span class="el-dropdown-link" @click="mountData(scope.row.ID)">{{ scope.row.Name}}</span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item @click.native="showDialog(scope.row.ID, scope.row.Name, 1)"><i
+                  <el-dropdown-item @click.native="showDialog(scope.row.ID, scope.$index, scope.row.Name, 1)"><i
                     class="icons el-icon-edit"></i>重命名
                   </el-dropdown-item>
-                  <el-dropdown-item divided @click.native="deleteFolder(scope.row.ID)"><i
+                  <el-dropdown-item divided @click.native="deleteFolder(scope.$index, scope.row.ID)"><i
                     class="icons el-icon-delete"></i>删除
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -48,10 +48,10 @@
                   </el-dropdown-item>
                   <el-dropdown-item @click.native="getShare(scope.row.ID)"><i class="icons el-icon-share"></i>分享
                   </el-dropdown-item>
-                  <el-dropdown-item @click.native="showDialog(scope.row.ID, scope.row.Name, 2)"><i
+                  <el-dropdown-item @click.native="showDialog(scope.row.ID, scope.$index, scope.row.Name, 2)"><i
                     class="icons el-icon-edit"></i>重命名
                   </el-dropdown-item>
-                  <el-dropdown-item divided @click.native="deleteFile(scope.row.ID)"><i
+                  <el-dropdown-item divided @click.native="deleteFile(scope.$index, scope.row.ID)"><i
                     class="icons el-icon-delete"></i>删除
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -72,8 +72,8 @@
           </el-table-column>
         </el-table>
         <div class="content-tool">
-          <el-upload class="upload-tool" :file-list="fileList" action="null" :http-request="uploadFile" :limit="1"
-                     :on-remove="handleRemove">
+          <el-upload ref="upload" class="upload-tool" :file-list="fileList" action="null" :http-request="uploadFile" multiple
+                     :limit="3" show-file-list="false" :on-remove="handleRemove" :on-exceed="onExceed">
             <el-button type="success" round>点击上传</el-button>
           </el-upload>
           <div class="folder-tool">
@@ -146,7 +146,7 @@
         fileList: [], // 上传文件列表
         tableData: [], // 表格数据
         paths: [], // 目录路径
-        cancelToken: axios.CancelToken.source(), // 曲线上传
+        cancelToken: new Map(), // 取消上传
       }
     },
     mounted() {
@@ -154,39 +154,44 @@
     },
     methods: {
       uploadFile(file) {
-        console.log(file);
+        console.log(file)
         let url = "/file/upload?";
         if (this.folderID) {
           url += "fid=" + this.folderID + "&";
         }
-        this.cancelToken = axios.CancelToken.source();
+        this.cancelToken.set(file.file.uid, axios.CancelToken.source());
         let FormDatas = new FormData();
         FormDatas.append('file', file.file);
         service({
           url: url + 'size=' + file.file.size,
           method: 'post',
           data: FormDatas,
-          cancelToken: this.cancelToken.token,
+          cancelToken: this.cancelToken.get(file.file.uid).token,
           //上传进度
           onUploadProgress: (progressEvent) => {
             let num = progressEvent.loaded / progressEvent.total * 100 | 0;  //百分比
             file.onProgress({percent: num})     //进度条
           }
-        }).then(() => {
-          this.$notify({
+        }).then(response => {
+          this.$notify.success({
             title: '成功',
             message: '上传文件成功',
-            type: 'success'
           });
           file.onSuccess(); //上传成功(打钩的小图标)
-          this.mountData(this.folderID)
+          this.tableData.push(response.data.file)
+          this.cancelToken.delete(file.file.uid)
+          this.$refs.upload.clearFiles()
         }).catch(err => {
           this.$message({
             message: err,
             type: 'error'
           });
           file.onError(err)
+          this.cancelToken.delete(file.file.uid)
         })
+      },
+      onExceed(file, fileList){
+        this.$message.warning("最多只能上传三个文件")
       },
       downloadFile(id) {
         let elemIF = document.createElement('iframe')
@@ -195,7 +200,10 @@
         document.body.appendChild(elemIF)
       },
       handleRemove(file, fileList) {
-        this.cancelToken.cancel('Operation canceled by the user.');
+        if (this.cancelToken.has(file.uid)) {
+          this.cancelToken.get(file.uid).cancel('Operation canceled by the user.');
+          this.cancelToken.delete(file.uid)
+        }
       },
       mountData(path) {
         this.loading = true;
@@ -229,93 +237,95 @@
       getShare(id) {
         instance.get("/file/get-link?id=" + id).then(response => {
           this.dialogShareVisible = true;
-          console.log(response);
-          this.shareLink.url = defaultSettings.baseAPI + "/share?f=" + response.link;
+          this.shareLink.url = defaultSettings.website + defaultSettings.baseAPI + "/share?f=" + response.link;
         })
       },
       addFolder() {
-        if (this.folderName) {
+        let name = this.folderName;
+        this.folderName = "";
+        if (name) {
           this.loading = true;
           instance.post("/folder/add", {
-            name: this.folderName,
+            name: name,
             fid: this.folderID
-          }).then(() => {
-            this.$notify({
+          }).then(response => {
+            this.$notify.success({
               title: '成功',
               message: '添加文件夹成功',
-              type: 'success'
             });
-            this.mountData(this.folderID)
+            this.tableData.unshift(response.folder)
+            this.loading = false;
           }).catch(() => {
             this.loading = false;
           });
-          this.folderName = "";
           this.visible = false
         }
       },
-      deleteFolder(id) {
+      deleteFolder(index, id) {
         this.loading = true;
         instance.get("/folder/delete?id=" + id).then(() => {
-          this.$notify({
+          this.$notify.success({
             title: '成功',
             message: '删除文件夹成功',
-            type: 'success'
           });
-          this.mountData(this.folderID)
+          this.tableData.splice(index, 1);
+          this.loading = false;
         }).catch(() => {
           this.loading = false;
         })
       },
-      deleteFile(id) {
+      deleteFile(index, id) {
         this.loading = true;
         instance.get("/file/delete?id=" + id).then(() => {
-          this.$notify({
+          this.$notify.success({
             title: '成功',
             message: '删除文件成功',
-            type: 'success'
           });
-          this.mountData(this.folderID)
+          this.tableData.splice(index, 1);
+          this.loading = false;
         }).catch(() => {
           this.loading = false;
         })
       },
-      renameFile(id) {
-        if (this.targetName) {
+      renameFile(index, id) {
+        let name = this.targetName
+        this.targetName = "";
+        if (name) {
           this.loading = true;
           instance.post("/file/rename", {
-            name: this.targetName,
+            name: name,
             id: id
           }).then(() => {
-            this.$notify({
+            this.$notify.success({
               title: '成功',
               message: '重命名文件成功',
-              type: 'success'
             });
-            this.mountData(this.folderID)
+            this.tableData[index].Name = name
+            this.loading = false;
           }).catch(() => {
             this.loading = false;
           });
-          this.targetName = "";
         }
       },
-      renameFolder(id) {
-        if (this.targetName) {
+      renameFolder(index, id) {
+        let name = this.targetName;
+        this.targetName = "";
+        if (name) {
           this.loading = true;
           instance.post("/folder/rename", {
-            name: this.targetName,
+            name: name,
             id: id,
             fid: this.folderID
           }).then(() => {
-            this.$notify({
+            this.$notify.success({
               title: '成功',
               message: '重命名文件夹成功',
-              type: 'success'
             });
-            this.mountData(this.folderID)
+            this.tableData[index].Name = name
+            this.loading = false;
           }).catch(() => {
             this.loading = false;
           });
-          this.targetName = "";
         }
       },
       convertSize(size) {
@@ -324,8 +334,9 @@
       convertData(data) {
         return new Date(data).toLocaleString().replace(/\//g, "-")
       },
-      showDialog(id, name, type) {
+      showDialog(id, index, name, type) {
         this.targetID = id;
+        this.targetIndex = index;
         this.targetName = name;
         if (type === 1) {
           this.targetType = 1;
@@ -337,20 +348,21 @@
         this.dialogVisible = true
       },
       submitRename() {
+        let id = this.targetID;
+        let index = this.targetIndex;
+        this.targetID = "";
+        this.targetIndex = "";
         if (this.targetType === 1) {
-          this.renameFolder(this.targetID)
+          this.renameFolder(index, id)
         } else {
-          this.renameFile(this.targetID)
+          this.renameFile(index, id)
         }
         this.dialogVisible = false
-        this.targetID = ""
+
       },
       copy() {
         this.$copyText(this.shareLink.url).then(() => {
-          this.$message({
-            message: '已复制到剪切板',
-            type: 'success'
-          });
+          this.$message.success("已复制到剪切板");
         }, err => {
           console.log(err)
         })

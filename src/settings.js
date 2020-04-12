@@ -2,6 +2,7 @@ module.exports = {
 
   title: 'AirBox',
   port: 9528,
+  website: "http://cloud.guriytan.cn/",
 
   /**
    * @type {boolean} true | false
@@ -23,5 +24,5 @@ module.exports = {
    * @type {string}
    * @description Whether show the api
    */
-  baseAPI: 'http://localhost:8080'
+  baseAPI: 'api'
 };
