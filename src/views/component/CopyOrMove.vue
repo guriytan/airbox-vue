@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="title" :visible.sync="visible" width="40%" :before-close="handleClose">
+  <el-dialog :title="title" :visible.sync="visible" width="25%" :before-close="handleClose">
     <el-tree :node-key="id" :data="data" :props="defaultProps" accordion :load="loadNode" lazy highlight-current>
     </el-tree>
     <span slot="footer" class="dialog-footer">

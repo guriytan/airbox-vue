@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="title" :visible.sync="visible" width="50%" :before-close="handleClose">
+  <el-dialog :title="title" :visible.sync="visible" width="30%" :before-close="handleClose">
     <el-input v-model="rename" placeholder="文件名" suffix-icon="el-icon-edit-outline"
               @keyup.enter.native="submitRename()">
     </el-input>
