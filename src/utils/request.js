@@ -1,6 +1,7 @@
 import axios from 'axios'
 import defaultSettings from '@/settings'
 import {MessageBox, Message} from 'element-ui'
+import store from '@/store'
 import Qs from "qs"
 import {getToken} from "@/utils/auth";
 
@@ -9,13 +10,28 @@ const normalRequest = axios.create({
   // timeout: 5000,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
-    'Authorization': getToken(),
   },
   transformRequest: [function (data) {
     // 这里可以在发送请求之前对请求数据做处理，比如form-data格式化等，这里可以使用开头引入的Qs（这个模块在安装axios的时候就已经安装了，不需要另外安装）
     return Qs.stringify(data);
   }],
 });
+
+// request interceptor
+normalRequest.interceptors.request.use(
+  config => {
+    if (store.getters.token) {
+      // let each request carry token
+      config.headers['Authorization'] = getToken()
+    }
+    return config
+  },
+  error => {
+    // do something with request error
+    console.log(error) // for debug
+    return Promise.reject(error)
+  }
+)
 
 // response interceptor
 normalRequest.interceptors.response.use(

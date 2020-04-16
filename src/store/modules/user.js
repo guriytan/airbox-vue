@@ -1,5 +1,5 @@
 import {getToken, setToken, removeToken} from '@/utils/auth'
-import normalRequest, {GetToken} from "@/utils/request";
+import {GetToken} from "@/utils/request";
 
 const getDefaultState = () => {
   return {
