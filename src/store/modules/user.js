@@ -1,5 +1,5 @@
 import {getToken, setToken, removeToken} from '@/utils/auth'
-import instance from "@/utils/request";
+import normalRequest, {GetToken} from "@/utils/request";
 
 const getDefaultState = () => {
   return {
@@ -23,13 +23,12 @@ const actions = {
   login({commit}, userInfo) {
     const {username, password} = userInfo;
     return new Promise((resolve, reject) => {
-      instance.post('/user/login', {user: username.trim(), password: password})
-        .then(response => {
-          commit('SET_TOKEN', response.token);
-          setToken(response.token);
-          resolve()
-        }).catch(error => {
-        reject(error)
+      GetToken(username.trim(), password).then(res => {
+        commit('SET_TOKEN', res.token);
+        setToken(res.token);
+        resolve()
+      }).catch(err => {
+        reject(err)
       })
     })
   },

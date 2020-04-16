@@ -17,15 +17,10 @@
         </el-breadcrumb>
       </el-card>
       <el-card class="files-card">
-        <el-table :data="tableData" class="files-table" fit stripe max-height="450" v-loading="loading">
+        <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading">
           <el-table-column prop="icon" label="" width="50">
             <template slot-scope="scope">
-              <i v-if="typeof scope.row.Type === 'undefined'" class="iconfont icon-files"></i>
-              <i v-if="scope.row.Type === 0" class="iconfont icon-music"></i>
-              <i v-if="scope.row.Type === 1" class="iconfont icon-video"></i>
-              <i v-if="scope.row.Type === 2" class="iconfont icon-document"></i>
-              <i v-if="scope.row.Type === 3" class="iconfont icon-picture"></i>
-              <i v-if="scope.row.Type === 4" class="iconfont icon-other"></i>
+              <icon :type="scope.row.Type"></icon>
             </template>
           </el-table-column>
           <el-table-column prop="Name" label="文件名" min-width="250" show-overflow-tooltip>
@@ -33,10 +28,16 @@
               <el-dropdown v-if="typeof scope.row.Type === 'undefined'" placement="bottom-end">
                 <span class="el-dropdown-link" @click="mountData(scope.row.ID)">{{ scope.row.Name}}</span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item @click.native="showDialog(scope.row.ID, scope.$index, scope.row.Name, 1)"><i
+                  <el-dropdown-item @click.native="showRenameDialog(scope.row.ID, scope.$index, scope.row.Name, 0)"><i
                     class="icons el-icon-edit"></i>重命名
                   </el-dropdown-item>
-                  <el-dropdown-item divided @click.native="deleteFolder(scope.$index, scope.row.ID)"><i
+                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, 0, true)"><i
+                    class="icons el-icon-copy-document"></i>复制到
+                  </el-dropdown-item>
+                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, 0)"><i
+                    class="icons el-icon-scissors"></i>移动到
+                  </el-dropdown-item>
+                  <el-dropdown-item divided @click.native="deleteF(0, scope.$index, scope.row.ID)"><i
                     class="icons el-icon-delete"></i>删除
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -48,10 +49,16 @@
                   </el-dropdown-item>
                   <el-dropdown-item @click.native="getShare(scope.row.ID)"><i class="icons el-icon-share"></i>分享
                   </el-dropdown-item>
-                  <el-dropdown-item @click.native="showDialog(scope.row.ID, scope.$index, scope.row.Name, 2)"><i
+                  <el-dropdown-item @click.native="showRenameDialog(scope.row.ID, scope.$index, scope.row.Name, 1)"><i
                     class="icons el-icon-edit"></i>重命名
                   </el-dropdown-item>
-                  <el-dropdown-item divided @click.native="deleteFile(scope.$index, scope.row.ID)"><i
+                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, 1, true)"><i
+                    class="icons el-icon-copy-document"></i>复制到
+                  </el-dropdown-item>
+                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, 1)"><i
+                    class="icons el-icon-scissors"></i>移动到
+                  </el-dropdown-item>
+                  <el-dropdown-item divided @click.native="deleteF(1, scope.$index, scope.row.ID)"><i
                     class="icons el-icon-delete"></i>删除
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -72,261 +79,159 @@
           </el-table-column>
         </el-table>
         <div class="content-tool">
-          <el-upload ref="upload" class="upload-tool" :file-list="fileList" action="null" :http-request="uploadFile" multiple
-                     :limit="3" show-file-list="false" :on-remove="handleRemove" :on-exceed="onExceed">
-            <el-button type="success" round>点击上传</el-button>
-          </el-upload>
-          <div class="folder-tool">
-            <el-popover placement="bottom" width="320" v-model="visible">
-              <el-input v-model="folderName" placeholder="文件名" suffix-icon="el-icon-folder-add"
-                        @keyup.enter.native="addFolder">
-              </el-input>
-              <div style="text-align: right; margin-top: 10px">
-                <el-button size="mini" type="text" @click="visible = false">取消</el-button>
-                <el-button type="primary" size="mini" @click="addFolder()">确定</el-button>
-              </div>
-              <el-button slot="reference" type="primary" round>新建文件夹</el-button>
-            </el-popover>
-          </div>
+          <upload :fid="folderID" @loadData="mountData"></upload>
+          <new-folder :fid="folderID" @loading="onLoading" @unloading="hideLoading"
+                      @addData="addDataToHead"></new-folder>
         </div>
       </el-card>
     </el-card>
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="30%">
-      <el-input v-model="targetName" placeholder="文件名" suffix-icon="el-icon-edit-outline"
-                @keyup.enter.native="submitRename()">
-      </el-input>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false" round>取 消</el-button>
-        <el-button type="primary" @click="submitRename()" round>确 定</el-button>
-      </span>
-    </el-dialog>
-    <el-dialog title="分享链接" :visible.sync="dialogShareVisible" width="30%">
-      <div class="share-qr">
-        <vue-qr :text="shareLink.url" :margin="0" colorDark="#38025B" colorLight="#fff"
-                :logoSrc="shareLink.icon" :logoScale="0.4" :size="150"></vue-qr>
-      </div>
-      <div class="share-link">
-        <span @click="copy()">{{ shareLink.url }}</span>
-      </div>
-    </el-dialog>
+    <copy-or-move :visible="copyOrMoveObj.visible" :type="copyOrMoveObj.type" :id="copyOrMoveObj.id" :cid="folderID"
+                  :index="copyOrMoveObj.index" :copy="copyOrMoveObj.copy" @loading="onLoading" @unloading="hideLoading"
+                  @deleteData="deleteData" @hide="hideCopyOrMoveDialog"></copy-or-move>
+    <rename-dialog :visible="renameObj.visible" :type="renameObj.type" :id="renameObj.id" :name="renameObj.name"
+                   :index="renameObj.index" @loading="onLoading" @unloading="hideLoading" @rename="renameData"
+                   @hide="hideRenameDialog"></rename-dialog>
+    <share-link :link="shareObj.link" :visible="shareObj.visible" @hide="hideShareDialog"></share-link>
   </div>
 </template>
 
 <script>
-  import vueQr from 'vue-qr'
+  import {ShareLink, Icon, RenameDialog, NewFolder, Upload, CopyOrMove} from "@/views/component";
   import defaultSettings from '@/settings'
-  import service from "../utils/upload-request";
-  import instance from "../utils/request";
-  import axios from "axios"
+  import {GetList, GetShareLink, Delete} from "@/utils/request";
   import bytesToSize from "../utils/capacity"
 
   export default {
     name: 'Files',
     components: {
-      vueQr
+      ShareLink,
+      Icon,
+      RenameDialog,
+      NewFolder,
+      Upload,
+      CopyOrMove
     },
     data() {
       return {
+        loading: true, // 表格加载
         // 分享文件
-        dialogShareVisible: false,
-        shareLink: {
-          url: "",
-          icon: require('../../static/logo.png')
+        shareObj: {
+          visible: false,
+          link: ""
         },
         // 重命名
-        dialogVisible: false,
-        dialogTitle: "",
-        targetID: "",
-        targetName: "",
-        targetType: 0,
-        loading: true, // 表格加载
-        visible: false, // 新建文件夹的显示
-        folderName: "", // 新建文件夹名字
-        folderID: "", // 当前文件目录ID
-        fileList: [], // 上传文件列表
-        tableData: [], // 表格数据
+        renameObj: {
+          visible: false,
+          type: 0,
+          id: "",
+          name: "",
+          index: 0
+        },
+        // 移动或复制
+        copyOrMoveObj: {
+          visible: false,
+          type: 0,
+          id: "",
+          index: 0,
+          copy: false
+        },
+        folderID: "",
+        dataList: [], // 表格数据
         paths: [], // 目录路径
-        cancelToken: new Map(), // 取消上传
       }
     },
     mounted() {
       this.mountData()
     },
     methods: {
-      uploadFile(file) {
-        console.log(file)
-        let url = "/file/upload?";
-        if (this.folderID) {
-          url += "fid=" + this.folderID + "&";
-        }
-        this.cancelToken.set(file.file.uid, axios.CancelToken.source());
-        let FormDatas = new FormData();
-        FormDatas.append('file', file.file);
-        service({
-          url: url + 'size=' + file.file.size,
-          method: 'post',
-          data: FormDatas,
-          cancelToken: this.cancelToken.get(file.file.uid).token,
-          //上传进度
-          onUploadProgress: (progressEvent) => {
-            let num = progressEvent.loaded / progressEvent.total * 100 | 0;  //百分比
-            file.onProgress({percent: num})     //进度条
-          }
-        }).then(response => {
-          this.$notify.success({
-            title: '成功',
-            message: '上传文件成功',
-          });
-          file.onSuccess(); //上传成功(打钩的小图标)
-          this.tableData.push(response.data.file)
-          this.cancelToken.delete(file.file.uid)
-          this.$refs.upload.clearFiles()
-        }).catch(err => {
-          this.$message({
-            message: err,
-            type: 'error'
-          });
-          file.onError(err)
-          this.cancelToken.delete(file.file.uid)
-        })
-      },
-      onExceed(file, fileList){
-        this.$message.warning("最多只能上传三个文件")
-      },
       downloadFile(id) {
         let elemIF = document.createElement('iframe')
-        elemIF.src = defaultSettings.baseAPI + '/file/download?id=' + id;
+        elemIF.src = defaultSettings.baseAPI + '/file/' + id;
         elemIF.style.display = 'none'
         document.body.appendChild(elemIF)
       },
-      handleRemove(file, fileList) {
-        if (this.cancelToken.has(file.uid)) {
-          this.cancelToken.get(file.uid).cancel('Operation canceled by the user.');
-          this.cancelToken.delete(file.uid)
-        }
-      },
       mountData(path) {
-        this.loading = true;
-        let url = "/panel/files";
-        if (path) {
-          url += "?fid=" + path;
-          this.folderID = path;
-        } else {
-          this.folderID = "";
-        }
-        instance.get(url).then(response => {
-          this.tableData = [];
-          response.folders.forEach(item => {
-            this.tableData.push(item)
+        this.onLoading();
+        this.folderID = path
+        GetList(path).then(res => {
+          this.dataList = [];
+          res.folders.forEach(item => {
+            this.dataList.push(item)
           });
-          response.files.forEach(item => {
-            this.tableData.push(item)
+          res.files.forEach(item => {
+            this.dataList.push(item)
           });
-          this.paths = [];
+          this.paths.length = 0;
           if (path) {
-            response.path.reverse();
-            response.path.forEach(item => {
+            res.path.reverse();
+            res.path.forEach(item => {
               this.paths.push(item)
             });
           }
-          this.loading = false;
+          this.hideLoading();
         }).catch(() => {
-          this.loading = false;
+          this.hideLoading();
+        })
+      },
+      deleteF(type, index, id) {
+        this.onLoading();
+        Delete(type, id).then(() => {
+          this.$notify.success({
+            title: '成功',
+            message: type === 0 ? '删除文件夹成功' : '删除文件成功',
+          });
+          this.deleteData(index)
+          this.hideLoading();
+        }).catch(() => {
+          this.hideLoading();
         })
       },
       getShare(id) {
-        instance.get("/file/get-link?id=" + id).then(response => {
-          this.dialogShareVisible = true;
-          this.shareLink.url = defaultSettings.website + defaultSettings.baseAPI + "/share?f=" + response.link;
+        GetShareLink(id).then(response => {
+          this.shareObj.visible = true;
+          this.shareObj.link = defaultSettings.website + defaultSettings.baseAPI + "/info/share?link=" + response.link;
         })
       },
-      addFolder() {
-        let name = this.folderName;
-        this.folderName = "";
-        if (name) {
-          this.loading = true;
-          instance.post("/folder/add", {
-            name: name,
-            fid: this.folderID
-          }).then(response => {
-            this.$notify.success({
-              title: '成功',
-              message: '添加文件夹成功',
-            });
-            this.tableData.unshift(response.folder)
-            this.loading = false;
-          }).catch(() => {
-            this.loading = false;
-          });
-          this.visible = false
-        }
+      showRenameDialog(id, index, name, type) {
+        this.renameObj.id = id;
+        this.renameObj.index = index;
+        this.renameObj.name = name;
+        this.renameObj.type = type;
+        this.renameObj.visible = true
       },
-      deleteFolder(index, id) {
-        this.loading = true;
-        instance.get("/folder/delete?id=" + id).then(() => {
-          this.$notify.success({
-            title: '成功',
-            message: '删除文件夹成功',
-          });
-          this.tableData.splice(index, 1);
-          this.loading = false;
-        }).catch(() => {
-          this.loading = false;
-        })
+      showFolderDialog(id, index, type, copy) {
+        this.copyOrMoveObj.id = id;
+        this.copyOrMoveObj.index = index;
+        this.copyOrMoveObj.copy = copy || false;
+        this.copyOrMoveObj.type = type;
+        this.copyOrMoveObj.visible = true
       },
-      deleteFile(index, id) {
-        this.loading = true;
-        instance.get("/file/delete?id=" + id).then(() => {
-          this.$notify.success({
-            title: '成功',
-            message: '删除文件成功',
-          });
-          this.tableData.splice(index, 1);
-          this.loading = false;
-        }).catch(() => {
-          this.loading = false;
-        })
+      addDataToHead(data) {
+        this.dataList.unshift(data)
       },
-      renameFile(index, id) {
-        let name = this.targetName
-        this.targetName = "";
-        if (name) {
-          this.loading = true;
-          instance.post("/file/rename", {
-            name: name,
-            id: id
-          }).then(() => {
-            this.$notify.success({
-              title: '成功',
-              message: '重命名文件成功',
-            });
-            this.tableData[index].Name = name
-            this.loading = false;
-          }).catch(() => {
-            this.loading = false;
-          });
-        }
+      addDataToRear(data) {
+        this.dataList.push(data)
       },
-      renameFolder(index, id) {
-        let name = this.targetName;
-        this.targetName = "";
-        if (name) {
-          this.loading = true;
-          instance.post("/folder/rename", {
-            name: name,
-            id: id,
-            fid: this.folderID
-          }).then(() => {
-            this.$notify.success({
-              title: '成功',
-              message: '重命名文件夹成功',
-            });
-            this.tableData[index].Name = name
-            this.loading = false;
-          }).catch(() => {
-            this.loading = false;
-          });
-        }
+      deleteData(index) {
+        this.dataList.splice(index, 1)
+      },
+      renameData(index, name) {
+        this.dataList[index].Name = name
+      },
+      onLoading() {
+        this.loading = true
+      },
+      hideLoading() {
+        this.loading = false
+      },
+      hideRenameDialog() {
+        this.renameObj.visible = false
+      },
+      hideShareDialog() {
+        this.shareObj.visible = false
+      },
+      hideCopyOrMoveDialog() {
+        this.copyOrMoveObj.visible = false
       },
       convertSize(size) {
         return bytesToSize(size)
@@ -334,39 +239,6 @@
       convertData(data) {
         return new Date(data).toLocaleString().replace(/\//g, "-")
       },
-      showDialog(id, index, name, type) {
-        this.targetID = id;
-        this.targetIndex = index;
-        this.targetName = name;
-        if (type === 1) {
-          this.targetType = 1;
-          this.dialogTitle = "重命名文件夹"
-        } else {
-          this.targetType = 2;
-          this.dialogTitle = "重命名文件"
-        }
-        this.dialogVisible = true
-      },
-      submitRename() {
-        let id = this.targetID;
-        let index = this.targetIndex;
-        this.targetID = "";
-        this.targetIndex = "";
-        if (this.targetType === 1) {
-          this.renameFolder(index, id)
-        } else {
-          this.renameFile(index, id)
-        }
-        this.dialogVisible = false
-
-      },
-      copy() {
-        this.$copyText(this.shareLink.url).then(() => {
-          this.$message.success("已复制到剪切板");
-        }, err => {
-          console.log(err)
-        })
-      }
     }
   }
 </script>
@@ -410,33 +282,7 @@
         .content-tool {
           position: relative;
           padding: 10px;
-
-          .upload-tool {
-            float: left;
-            margin-bottom: 20px;
-          }
-
-          .folder-tool {
-            float: right;
-          }
-        }
-      }
-    }
-
-    .share-qr {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .share-link {
-      text-align: center;
-
-      span {
-        padding: 10px;
-        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
-
-        &:hover {
-          color: #4A1969;
+          margin-bottom: 30px;
         }
       }
     }

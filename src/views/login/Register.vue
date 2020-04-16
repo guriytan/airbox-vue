@@ -53,7 +53,7 @@
 </template>
 
 <script>
-  import instance from "../../utils/request";
+  import {Register, SendRegister} from "@/utils/request";
 
   const TIME_COUNT = 60;
 
@@ -124,29 +124,21 @@
             }
           }, 1000)
         }
-        instance.post('/user/send-register-code', {
-          username: this.ruleForm.username,
-          email: this.ruleForm.email,
-        }).then(() => {
+        SendRegister(this.ruleForm.username, this.ruleForm.email).then(() => {
           this.$message({
             message: "已发送验证码至邮箱",
             type: 'success'
           });
-        });
+        })
       },
       submitForm() {
         this.$refs.ruleForm.validate((valid) => {
           if (valid) {
-            instance({
-              url: '/user/register',
-              method: 'post',
-              data: {
-                username: this.ruleForm.username,
-                password: this.ruleForm.password,
-                code: this.ruleForm.code,
-                email: this.ruleForm.email,
-              }
-            }).then(() => {
+            Register(this.ruleForm.username, this.ruleForm.password, this.ruleForm.email, this.ruleForm.code).then(() => {
+              this.$message({
+                message: "注册成功",
+                type: 'success'
+              });
               this.$router.push({path: '/login'})
             })
           } else {

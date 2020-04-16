@@ -28,10 +28,10 @@
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item><i class="icons el-icon-download"></i>下载</el-dropdown-item>
                   <el-dropdown-item><i class="icons el-icon-share"></i>分享</el-dropdown-item>
-                  <el-dropdown-item @click.native="showDialog(scope.row.ID, scope.row.Name)"><i
+                  <el-dropdown-item @click.native="showDialog(scope.row.ID, scope.$index, scope.row.Name)"><i
                     class="icons el-icon-edit"></i>重命名
                   </el-dropdown-item>
-                  <el-dropdown-item divided @click.native="deleteFile(scope.row.ID)"><i
+                  <el-dropdown-item divided @click.native="deleteFile(scope.$index, scope.row.ID)"><i
                     class="icons el-icon-delete"></i>删除
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -53,31 +53,32 @@
         </el-table>
       </el-card>
     </el-card>
-    <el-dialog title="重命名文件" :visible.sync="dialogVisible" width="30%">
-      <el-input v-model="targetName" placeholder="文件名" suffix-icon="el-icon-edit-outline"
-                @keyup.enter.native="submitRename()">
-      </el-input>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false" round>取 消</el-button>
-        <el-button type="primary" @click="submitRename()" round>确 定</el-button>
-      </span>
-    </el-dialog>
+    <rename-dialog :visible="renameObj.visible" :type="renameObj.type" :id="renameObj.id" :name="renameObj.name"
+                   :index="renameObj.index" @loading="onLoading" @unloading="hideLoading" @rename="renameData"
+                   @hideDialog="hideRenameDialog"></rename-dialog>
   </div>
 </template>
 
 <script>
-  import instance from "@/utils/request";
+  import {Delete, GetType} from "@/utils/request";
   import bytesToSize from "@/utils/capacity";
+  import {solveType, solveIcon} from "@/utils/type";
+  import {RenameDialog} from "@/views/component";
 
   export default {
     name: 'Type',
+    components: {RenameDialog},
     data() {
       return {
         type: this.$route.params.id,
         // 重命名
-        dialogVisible: false,
-        targetID: "",
-        targetName: "",
+        renameObj: {
+          visible: false,
+          type: 0,
+          id: "",
+          name: "",
+          index: 0
+        },
         loading: true, // 表格加载
         tableData: []
       }
@@ -87,55 +88,48 @@
     },
     methods: {
       solveType() {
-        if (this.type === '0') {
-          return '音乐'
-        } else if (this.type === '1') {
-          return '视频'
-        } else if (this.type === '2') {
-          return '文档'
-        } else if (this.type === '3') {
-          return '图像'
-        } else {
-          return '其他'
-        }
+        return solveType(this.type)
       },
       solveIcon() {
-        if (this.type === '0') {
-          return 'music'
-        } else if (this.type === '1') {
-          return 'video'
-        } else if (this.type === '2') {
-          return 'document'
-        } else if (this.type === '3') {
-          return 'picture'
-        } else {
-          return 'other'
-        }
+        return solveIcon(this.type)
       },
       mountData() {
-        this.loading = true;
-        instance.get("/panel/types?type=" + this.type).then(response => {
-          this.tableData = [];
-          response.files.forEach(item => {
+        this.onLoading();
+        GetType(this.type).then(res => {
+          this.tableData.length = 0;
+          res.files.forEach(item => {
             this.tableData.push(item)
           });
-          this.loading = false;
+          this.hideLoading();
         }).catch(() => {
-          this.loading = false;
+          this.hideLoading();
         })
       },
-      deleteFile(id) {
-        this.loading = true;
-        instance.get("/file/delete?id=" + id).then(() => {
+      deleteFile(index, id) {
+        this.onLoading();
+        Delete(1, index, id).then(() => {
           this.$notify({
             title: '成功',
             message: '删除文件成功',
             type: 'success'
           });
-          this.mountData()
+          this.tableData.splice(index, 1);
+          this.hideLoading();
         }).catch(() => {
-          this.loading = false;
+          this.hideLoading();
         })
+      },
+      renameData(index, name) {
+        this.tableData[index].Name = name
+      },
+      onLoading() {
+        this.loading = true
+      },
+      hideLoading() {
+        this.loading = false
+      },
+      hideRenameDialog() {
+        this.renameObj.visible = false
       },
       convertSize(size) {
         return bytesToSize(size)
@@ -143,32 +137,13 @@
       convertData(data) {
         return new Date(data).toLocaleString().replace(/\//g, "-")
       },
-      showDialog(id, name) {
-        this.targetID = id;
-        this.targetName = name;
-        this.dialogVisible = true
+      showDialog(id, index, name) {
+        this.renameObj.id = id;
+        this.renameObj.index = index;
+        this.renameObj.name = name;
+        this.renameObj.type = 1;
+        this.renameObj.visible = true
       },
-      submitRename() {
-        if (this.targetName) {
-          this.loading = true;
-          instance.post("/file/rename", {
-            name: this.targetName,
-            id: this.targetID
-          }).then(() => {
-            this.$notify({
-              title: '成功',
-              message: '重命名文件成功',
-              type: 'success'
-            });
-            this.mountData()
-          }).catch(() => {
-            this.loading = false;
-          });
-          this.targetName = "";
-        }
-        this.dialogVisible = false
-        this.targetID = ""
-      }
     }
   }
 </script>

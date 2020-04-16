@@ -30,7 +30,7 @@
 </template>
 
 <script>
-  import instance from "@/utils/request";
+  import {ResetPwd} from "@/utils/request";
 
   export default {
     name: "Reset",
@@ -63,11 +63,11 @@
       submitForm() {
         this.$refs.ruleForm.validate((valid) => {
           if (valid) {
-            instance({
-              url: '/user/reset-pwd?token=' + this.token,
-              method: 'post',
-              data: {password: this.ruleForm.password,}
-            }).then(() => {
+            ResetPwd(this.token, this.ruleForm.password).then(() => {
+              this.$message({
+                message: "修改密码成功",
+                type: 'success'
+              });
               this.$router.push({path: '/login'})
             })
           } else {

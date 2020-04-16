@@ -74,9 +74,6 @@
             </div>
           </el-col>
         </el-form-item>
-        <el-form-item prop="password" label-width="0">
-          <el-input type="password" v-model="formEmail.password" placeholder="密码"></el-input>
-        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogEmailVisible = false" round>取 消</el-button>
@@ -113,8 +110,16 @@
 </template>
 
 <script>
-  import instance from "@/utils/request";
+  import {
+    SendDeleteUser,
+    GetUserInfo,
+    ResetEmail,
+    ResetPwdOrigin,
+    SendResetEmail,
+    DeleteUser
+  } from "@/utils/request";
   import {setToken} from "@/utils/auth";
+  import {solveType} from "@/utils/type";
 
   const TIME_COUNT = 60;
 
@@ -127,8 +132,6 @@
         timer: null,
         dialogUserVisible: false,
         dialogPwdVisible: false,
-        originPwd: "",
-        NewPwd: "",
         dialogEmailVisible: false,
         chartSettings: {roseType: 'radius'},
         files: {
@@ -140,13 +143,13 @@
           rows: []
         },
         user: {
+          id: "",
           name: "",
           email: ""
         },
         formEmail: {
           email: "",
           code: "",
-          password: ""
         },
         formPwd: {
           newPwd: "",
@@ -166,19 +169,7 @@
             required: true,
             message: '请输入邮箱验证码',
             trigger: 'blur'
-          }],
-          password: [{
-            required: true,
-            message: '请输入密码',
-            trigger: 'blur'
-          },
-            {
-              min: 6,
-              max: 18,
-              message: '长度在 6 到 18 个字符',
-              trigger: 'blur'
-            }
-          ]
+          }]
         },
         rulesPwd: {
           oldPwd: [{
@@ -216,45 +207,28 @@
       }
     },
     mounted() {
-      instance.get("/panel/info").then(responce => {
-        responce.count.forEach(item => {
-          this.files.rows.push({'类型': this.solveType(item.Type), '数量': item.Count})
+      GetUserInfo().then(res => {
+        res.count.forEach(item => {
+          this.files.rows.push({'类型': solveType(item.Type.toString()), '数量': item.Count})
         })
-        this.total.rows.push({'容量': '已使用容量', '大小': responce.info.Storage.CurrentSize})
-        this.total.rows.push({'容量': '剩余容量', '大小': (responce.info.Storage.MaxSize - responce.info.Storage.CurrentSize)})
-        this.user.name = responce.info.Name;
-        this.user.email = responce.info.Email;
+        this.total.rows.push({'容量': '已使用容量', '大小': res.info.Storage.CurrentSize})
+        this.total.rows.push({'容量': '剩余容量', '大小': (res.info.Storage.MaxSize - res.info.Storage.CurrentSize)})
+        this.user.id = res.info.id;
+        this.user.name = res.info.Name;
+        this.user.email = res.info.Email;
       })
     },
     methods: {
-      solveType(type) {
-        if (type === 0) {
-          return '音乐'
-        } else if (type === 1) {
-          return '视频'
-        } else if (type === 2) {
-          return '文档'
-        } else if (type === 3) {
-          return '图像'
-        } else {
-          return '其他'
-        }
-      },
       submitResetPwd() {
         this.$refs.formPwd.validate((valid) => {
           if (valid) {
-            instance.post('/user/reset-pwd-origin', {
-              origin: this.formPwd.oldPwd,
-              password: this.formPwd.newPwd,
-            }).then(() => {
+            ResetPwdOrigin(this.user.id, this.formPwd.oldPwd, this.formPwd.newPwd).then(() => {
               this.$message({
                 message: "重置密码成功",
                 type: 'success'
               });
-              this.formPwd.oldPwd = ""
-              this.formPwd.newPwd = ""
               this.dialogPwdVisible = false
-            });
+            })
           } else {
             console.log('error submit!!');
             return false;
@@ -264,22 +238,15 @@
       submitResetEmail() {
         this.$refs.formEmail.validate((valid) => {
           if (valid) {
-            instance.post('/user/reset-email', {
-              email: this.formEmail.email,
-              code: this.formEmail.code,
-              password: this.formEmail.password,
-            }).then(response => {
+            ResetEmail(this.user.id, this.formEmail.email, this.formEmail.code).then(res => {
               this.$message({
                 message: "重置邮箱成功",
                 type: 'success'
               });
-              this.$store.dispatch('SET_TOKEN', response.token);
-              setToken(response.token);
-              this.formPwd.email = ""
-              this.formPwd.password = ""
-              this.formPwd.code = ""
+              this.$store.dispatch('SET_TOKEN', res.token);
+              setToken(res.token);
               this.dialogEmailVisible = false
-            });
+            })
           } else {
             console.log('error submit!!');
             return false;
@@ -287,61 +254,47 @@
         });
       },
       sendEmail() {
-        if (!this.timer) {
-          this.count = TIME_COUNT;
-          this.show = false;
-          this.timer = setInterval(() => {
-            if (this.count > 0 && this.count <= TIME_COUNT) {
-              this.count--;
-            } else {
-              this.show = true;
-              clearInterval(this.timer);  // 清除定时器
-              this.timer = null;
-            }
-          }, 1000)
-        }
-        instance.post('/user/send-reset-code', {
-          email: this.formEmail.email,
-          password: this.formEmail.password,
-        }).then(() => {
+        this.setTimer()
+        SendResetEmail(this.formEmail.email, this.formEmail.password).then(() => {
           this.$message({
             message: "已发送验证码至邮箱",
             type: 'success'
           });
-        });
+        })
       },
       applyUnsubscribe() {
-        if (!this.timer) {
-          this.count = TIME_COUNT;
-          this.show = false;
-          this.timer = setInterval(() => {
-            if (this.count > 0 && this.count <= TIME_COUNT) {
-              this.count--;
-            } else {
-              this.show = true;
-              clearInterval(this.timer);  // 清除定时器
-              this.timer = null;
-            }
-          }, 1000)
-        }
-        instance.get('/panel/apply-unsubscribe').then(() => {
+        this.setTimer()
+        SendDeleteUser().then(() => {
           this.$message({
             message: "已发送验证码至邮箱",
             type: 'success'
           });
-        });
+        })
       },
       unsubscribe() {
-        instance.post('/panel/unsubscribe', {
-          code: this.formUser.code,
-        }).then(() => {
+        DeleteUser(this.user.id, this.formUser.code).then(() => {
           this.$message({
             message: "已成功注销账户",
             type: 'success'
           });
           this.$store.dispatch('user/logout');
           this.$router.push({path: '/'})
-        });
+        })
+      },
+      setTimer() {
+        if (!this.timer) {
+          this.count = TIME_COUNT;
+          this.show = false;
+          this.timer = setInterval(() => {
+            if (this.count > 0 && this.count <= TIME_COUNT) {
+              this.count--;
+            } else {
+              this.show = true;
+              clearInterval(this.timer);  // 清除定时器
+              this.timer = null;
+            }
+          }, 1000)
+        }
       }
     }
   }

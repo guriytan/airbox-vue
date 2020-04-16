@@ -33,7 +33,7 @@
 </template>
 
 <script>
-  import instance from "@/utils/request";
+  import {ForgetPwd} from "@/utils/request";
 
   const TIME_COUNT = 60;
 
@@ -73,11 +73,7 @@
         }
         this.$refs.ruleForm.validate((valid) => {
           if (valid) {
-            instance({
-              url: '/user/forget',
-              method: 'post',
-              data: {info: this.ruleForm.user,}
-            }).then(() => {
+            ForgetPwd(this.ruleForm.user).then(() => {
               this.$message({
                 message: "若用户存在，系统将会发送重置密码链接至该用户邮箱",
                 type: 'success'
