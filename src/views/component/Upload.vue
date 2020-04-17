@@ -3,9 +3,6 @@
     <el-dropdown placement="bottom" class="upload-tool">
       <el-button type="success" round @click="clickFile()">上传文件</el-button>
       <input ref="file" type="file" @change.stop="changesFile" style="display: none">
-      <!--      <el-upload ref="upload" action="null" :http-request="uploadFile" :on-remove="handleRemove" :show-file-list="showList">-->
-      <!--        <el-button type="success" round>上传文件</el-button>-->
-      <!--      </el-upload>-->
       <el-dropdown-menu slot="dropdown">
         <el-dropdown-item><span @click="clickFolder()">上传文件夹</span></el-dropdown-item>
         <input ref="folder" type="file" webkitdirectory @change.stop="changesFolder" style="display: none">

@@ -24,6 +24,6 @@ module.exports = {
    * @type {string}
    * @description Whether show the api
    */
-  baseAPI: 'api'
-  // baseAPI: 'http://localhost:9000'
+  // baseAPI: 'api'
+  baseAPI: 'http://localhost:9000'
 };

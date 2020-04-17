@@ -81,7 +81,7 @@
         <div class="content-tool">
           <upload :fid="folderID" @loadData="mountData"></upload>
           <new-folder :fid="folderID" @loading="onLoading" @unloading="hideLoading"
-                      @addData="addDataToHead"></new-folder>
+                      @loadData="mountData"></new-folder>
         </div>
       </el-card>
     </el-card>

@@ -31,13 +31,13 @@
       addFolder() {
         if (this.name) {
           this.$emit("loading")
-          AddFolder(this.name, this.fid).then(res => {
+          AddFolder(this.name, this.fid).then(() => {
             this.$notify.success({
               title: '成功',
               message: '添加文件夹成功',
             });
             this.name = ""
-            this.$emit("addData", res)
+            this.$emit('loadData', this.fid)
             this.$emit("unloading")
           }).catch(() => {
             this.$emit("unloading")
