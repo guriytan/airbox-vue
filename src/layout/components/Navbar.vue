@@ -15,9 +15,11 @@
               <i class="icons el-icon-info"></i>用户信息
             </el-dropdown-item>
           </router-link>
-          <a target="_blank" href="https://panjiachen.github.io/vue-element-admin-site/#/">
-            <router-link to="/help"><el-dropdown-item><i class="icons el-icon-help"></i>帮助</el-dropdown-item></router-link>
-          </a>
+          <router-link to="/help">
+            <el-dropdown-item>
+              <i class="icons el-icon-help"></i>帮助
+            </el-dropdown-item>
+          </router-link>
           <el-dropdown-item divided @click.native="logout">
             <span style="display:block;"><i class="icons el-icon-ice-cream-round"></i>注销</span>
           </el-dropdown-item>

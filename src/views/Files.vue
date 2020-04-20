@@ -74,7 +74,7 @@
           </el-table-column>
           <el-table-column prop="UpdatedAt" label="日期" min-width="120">
             <template slot-scope="scope">
-              <span>{{ convertData(scope.row.UpdatedAt) }}</span>
+              <span>{{ convertDate(scope.row.UpdatedAt) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -206,12 +206,6 @@
         this.copyOrMoveObj.type = type;
         this.copyOrMoveObj.visible = true
       },
-      addDataToHead(data) {
-        this.dataList.unshift(data)
-      },
-      addDataToRear(data) {
-        this.dataList.push(data)
-      },
       deleteData(index) {
         this.dataList.splice(index, 1)
       },
@@ -236,8 +230,8 @@
       convertSize(size) {
         return bytesToSize(size)
       },
-      convertData(data) {
-        return new Date(data).toLocaleString().replace(/\//g, "-")
+      convertDate(date) {
+        return new Date(date).toLocaleString().replace(/\//g, "-")
       },
     }
   }
