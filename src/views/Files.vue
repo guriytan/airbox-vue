@@ -17,13 +17,14 @@
         </el-breadcrumb>
       </el-card>
       <el-card class="files-card">
-        <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading">
+        <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading"
+                  :default-sort="{prop: 'CreatedAt', order: 'descending'}">
           <el-table-column prop="icon" label="" width="50">
             <template slot-scope="scope">
               <icon :type="scope.row.Type"></icon>
             </template>
           </el-table-column>
-          <el-table-column prop="Name" label="文件名" min-width="250" show-overflow-tooltip>
+          <el-table-column prop="Name" label="文件名" min-width="250" show-overflow-tooltip sortable>
             <template slot-scope="scope">
               <el-dropdown v-if="typeof scope.row.Type === 'undefined'" placement="bottom-end">
                 <span class="el-dropdown-link" @click="mountData(scope.row.ID)">{{ scope.row.Name}}</span>
@@ -65,16 +66,16 @@
               </el-dropdown>
             </template>
           </el-table-column>
-          <el-table-column prop="Suffix" label="类型" min-width="80">
+          <el-table-column prop="Suffix" label="类型" min-width="80" sortable>
           </el-table-column>
-          <el-table-column prop="Size" label="大小" min-width="80">
+          <el-table-column prop="Size" label="大小" min-width="80" sortable>
             <template slot-scope="scope">
               <span v-if="typeof scope.row.Type !== 'undefined'">{{ convertSize(scope.row.Size) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="UpdatedAt" label="日期" min-width="120">
+          <el-table-column prop="CreatedAt" label="日期" min-width="120" sortable>
             <template slot-scope="scope">
-              <span>{{ convertDate(scope.row.UpdatedAt) }}</span>
+              <span>{{ convertDate(scope.row.CreatedAt) }}</span>
             </template>
           </el-table-column>
         </el-table>
