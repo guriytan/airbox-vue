@@ -7,7 +7,7 @@ import {getToken} from "@/utils/auth";
 
 const normalRequest = axios.create({
   baseURL: defaultSettings.baseAPI,
-  // timeout: 5000,
+  timeout: 5000,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
   },
@@ -48,7 +48,7 @@ normalRequest.interceptors.response.use(
     return response.data
   },
   error => {
-    if (error.response.status) {
+    if (error.response && error.response.status) {
       // 401: 未登录, 403 token过期
       // 未登录则跳转登录页面，并携带当前页面的路径
       // 在登录成功后返回当前页面，这一步需要在登录页操作。
@@ -70,6 +70,13 @@ normalRequest.interceptors.response.use(
         });
         return Promise.reject(error.response);
       }
+    } else {
+      Message({
+        message: 'Error',
+        type: 'error',
+        duration: 5 * 1000
+      });
+      return Promise.reject(error);
     }
   }
 );

@@ -45,7 +45,14 @@ module.exports = {
       alias: {
         '@': resolve('src')
       }
-    }
+    },
+    externals: {
+      'vue-router': 'VueRouter',
+      'vue': 'Vue',
+      'axios': 'axios',
+      'element-ui': 'ELEMENT',
+      'vuex': 'Vuex',
+    },
   },
   chainWebpack(config) {
     config.plugins.delete('preload') // TODO: need test

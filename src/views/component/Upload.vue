@@ -11,8 +11,8 @@
     <div class="show-list" v-if="drawer">
       <el-button type="info" round @click="showDrawer = true">显示上传列表</el-button>
     </div>
-    <el-drawer :visible.sync="showDrawer" direction="rtl" size="500px">
-      <el-table :data="fileList" style="margin: auto">
+    <el-drawer :visible.sync="showDrawer" direction="rtl" size="500px" :with-header="false">
+      <el-table :data="fileList" style="margin: auto" height="99%">
         <el-table-column prop="file.name" label="文件名" show-overflow-tooltip></el-table-column>
         <el-table-column prop="percentage" label="进度" width="75" header-align="center">
           <template slot-scope="scope">
@@ -50,7 +50,7 @@
         drawer: false,
         lock: false,
         fileList: [],
-        cancelToken: axios.CancelToken.source(), // 取消上传
+        uploadTask: [], // 待上传文件队列
         customColors: [
           {color: '#DCDCDD', percentage: 20},
           {color: '#9AD5CA', percentage: 40},
@@ -61,37 +61,42 @@
       }
     },
     methods: {
-      async uploadFile(fileList) {
+      uploadFile(fileList) {
         if (fileList.length === 0) {
           this.$message.warning("没有选择文件")
           return
         }
         for (let i = 0; i < fileList.length; i++) {
-          this.fileList.push({
+          let task = {
             file: fileList[i],
             name: fileList[i].name,
+            cancelToken: null,
             percentage: 0,
-            status: 0  // 0为等待上传，1为正在上传，2为上传完成，3为上传错误
-          })
+            status: 0  // 0为等待上传，1为正在上传，2为上传完成，3为上传错误，4为取消上传
+          }
+          this.fileList.push(task)
+          this.uploadTask.push(task)
         }
+        this.doUpload()
+      },
+      async doUpload() {
         if (this.lock) {
           return;
         }
         this.drawer = this.showDrawer = this.lock = true
-        for (const item of this.fileList) {
-          if (item.status !== 0) {
+        while (this.uploadTask.length !== 0) {
+          let task = this.uploadTask.shift()
+          if (task.status !== 0) {
             continue
           }
           try {
-            item.status = 1
-            await UploadFile(this.fid, item, this.cancelToken)
-            item.status = 2
+            task.status = 1
+            task.cancelToken = axios.CancelToken.source()
+            await UploadFile(this.fid, task)
+            task.status = 2
           } catch (err) {
-            item.status = 3
-            this.$message({
-              message: err,
-              type: 'error'
-            });
+            task.status = 3
+            this.$message.error(err);
           }
         }
         this.lock = false
@@ -102,12 +107,9 @@
         this.$emit('loadData', this.fid)
       },
       cancelDownload(item, index) {
-        if (item.status !== 1) {
-          this.fileList.splice(index, 1)
-        } else {
-          this.cancelToken.cancel("Cancel by User.")
-          this.fileList.splice(index, 1)
-        }
+        if (item.status === 1) this.fileList[index].cancelToken.cancel("Cancel by User.")
+        this.fileList[index].status = 4
+        this.fileList.splice(index, 1)
       },
       changesFolder() {
         this.uploadFile(this.$refs.folder.files)

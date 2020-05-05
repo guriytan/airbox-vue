@@ -3,9 +3,8 @@ import Vue from 'vue'
 import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 
 import ElementUI from 'element-ui'
-import VCharts from 'v-charts'
 import VePie from 'v-charts/lib/pie.common'
-import 'element-ui/lib/theme-chalk/index.css'
+// import 'element-ui/lib/theme-chalk/index.css'
 import './assets/font/iconfont.css'
 import VueClipboard from 'vue-clipboard2'
 
@@ -25,8 +24,6 @@ Vue.use(VueClipboard)
 Vue.use(ElementUI);
 
 Vue.config.productionTip = false;
-
-Vue.use(VCharts);
 
 Vue.component(VePie.name, VePie);
 

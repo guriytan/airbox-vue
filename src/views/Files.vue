@@ -96,20 +96,19 @@
 </template>
 
 <script>
-  import {ShareLink, Icon, RenameDialog, NewFolder, Upload, CopyOrMove} from "@/views/component";
   import defaultSettings from '@/settings'
   import {GetList, GetShareLink, Delete} from "@/utils/request";
-  import bytesToSize from "../utils/capacity"
+  import bytesToSize from "@/utils/capacity"
 
   export default {
     name: 'Files',
     components: {
-      ShareLink,
-      Icon,
-      RenameDialog,
-      NewFolder,
-      Upload,
-      CopyOrMove
+      ShareLink: () => import("@/views/component/ShareLink"),
+      Icon: () => import("@/views/component/Icon"),
+      RenameDialog: () => import("@/views/component/RenameDialog"),
+      NewFolder: () => import("@/views/component/NewFolder"),
+      Upload: () => import("@/views/component/Upload"),
+      CopyOrMove: () => import("@/views/component/CopyOrMove")
     },
     data() {
       return {

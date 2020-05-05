@@ -11,7 +11,7 @@ const uploadRequest = axios.create({
   },
 });
 
-export default function UploadFile(folderID, item, cancelToken) {
+export default function UploadFile(folderID, item) {
   let url = "/file/upload?";
   if (folderID) {
     url += "fid=" + folderID + "&";
@@ -28,7 +28,7 @@ export default function UploadFile(folderID, item, cancelToken) {
       url: url + 'size=' + item.file.size,
       method: 'post',
       data: formData,
-      cancelToken: cancelToken.token,
+      cancelToken: item.cancelToken.token,
       //上传进度
       onUploadProgress: (progressEvent) => {
         item.percentage = progressEvent.loaded / progressEvent.total * 100 | 0;  //百分比

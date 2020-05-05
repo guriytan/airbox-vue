@@ -96,8 +96,8 @@
         -webkit-box-shadow: 0 20px 50px 0 #3b2d9f;
 
         .author-info {
-          width: 200px;
-          height: 200px;
+          width: 20vh;
+          height: 20vh;
           margin-bottom: 20px;
         }
 
