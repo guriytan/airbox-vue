@@ -44,9 +44,7 @@
                 </el-dropdown-menu>
               </el-dropdown>
               <el-dropdown v-else placement="bottom-end">
-                <router-link :to="{path:'/preview', query:{id:scope.row.ID, type:scope.row.Type}}">
-                  <span class="el-dropdown-link">{{ scope.row.Name}}</span>
-                </router-link>
+                <span class="el-dropdown-link">{{ scope.row.Name}}</span>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item @click.native="downloadFile(scope.row.ID)"><i class="icons el-icon-download"></i>下载
                   </el-dropdown-item>
@@ -69,6 +67,11 @@
             </template>
           </el-table-column>
           <el-table-column prop="Suffix" label="类型" min-width="80" sortable>
+            <template slot-scope="scope">
+              <router-link :to="{path:'/preview', query:{id:scope.row.ID, type:scope.row.Type}}">
+                <span>{{scope.row.Suffix}}</span>
+              </router-link>
+            </template>
           </el-table-column>
           <el-table-column prop="Size" label="大小" min-width="80" sortable>
             <template slot-scope="scope">
