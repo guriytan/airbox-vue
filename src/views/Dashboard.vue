@@ -110,14 +110,7 @@
 </template>
 
 <script>
-  import {
-    SendDeleteUser,
-    GetUserInfo,
-    ResetEmail,
-    ResetPwdOrigin,
-    SendResetEmail,
-    DeleteUser
-  } from "@/utils/request";
+  import {DeleteUser, GetUserInfo, ResetEmail, SendDeleteUser, SendResetEmail} from "@/utils/request";
   import {setToken} from "@/utils/auth";
   import {solveType} from "@/utils/type";
 
@@ -143,7 +136,6 @@
           rows: []
         },
         user: {
-          id: "",
           name: "",
           email: ""
         },
@@ -152,6 +144,7 @@
           code: "",
         },
         formPwd: {
+          id: "",
           newPwd: "",
           oldPwd: "",
         },
@@ -213,7 +206,7 @@
         })
         this.total.rows.push({'容量': '已使用容量', '大小': res.info.Storage.CurrentSize})
         this.total.rows.push({'容量': '剩余容量', '大小': (res.info.Storage.MaxSize - res.info.Storage.CurrentSize)})
-        this.user.id = res.info.id;
+        this.formPwd.id = res.info.id;
         this.user.name = res.info.Name;
         this.user.email = res.info.Email;
       })
@@ -222,7 +215,7 @@
       submitResetPwd() {
         this.$refs.formPwd.validate((valid) => {
           if (valid) {
-            ResetPwdOrigin(this.user.id, this.formPwd.oldPwd, this.formPwd.newPwd).then(() => {
+            this.$store.dispatch('user/reset', this.formPwd).then(() => {
               this.$message({
                 message: "重置密码成功",
                 type: 'success'
@@ -238,7 +231,7 @@
       submitResetEmail() {
         this.$refs.formEmail.validate((valid) => {
           if (valid) {
-            ResetEmail(this.user.id, this.formEmail.email, this.formEmail.code).then(res => {
+            ResetEmail(this.formPwd.id, this.formEmail.email, this.formEmail.code).then(res => {
               this.$message({
                 message: "重置邮箱成功",
                 type: 'success'
@@ -272,7 +265,7 @@
         })
       },
       unsubscribe() {
-        DeleteUser(this.user.id, this.formUser.code).then(() => {
+        DeleteUser(this.formPwd.id, this.formUser.code).then(() => {
           this.$message({
             message: "已成功注销账户",
             type: 'success'

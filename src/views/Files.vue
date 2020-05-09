@@ -44,7 +44,9 @@
                 </el-dropdown-menu>
               </el-dropdown>
               <el-dropdown v-else placement="bottom-end">
-                <span class="el-dropdown-link">{{ scope.row.Name}}</span>
+                <router-link :to="{path:'/preview', query:{id:scope.row.ID, type:scope.row.Type}}">
+                  <span class="el-dropdown-link">{{ scope.row.Name}}</span>
+                </router-link>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item @click.native="downloadFile(scope.row.ID)"><i class="icons el-icon-download"></i>下载
                   </el-dropdown-item>
@@ -98,7 +100,7 @@
 
 <script>
   import defaultSettings from '@/settings'
-  import {GetList, GetShareLink, Delete} from "@/utils/request";
+  import {Delete, GetList, GetShareLink} from "@/utils/request";
   import bytesToSize from "@/utils/capacity"
 
   export default {

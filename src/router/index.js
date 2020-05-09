@@ -72,6 +72,11 @@ export const constantRoutes = [
       component: () => import('@/views/Files'),
       meta: {title: 'Files'}
     }, {
+      path: 'preview',
+      name: 'Preview',
+      component: () => import('@/views/Preview'),
+      meta: {title: 'Preview'}
+    }, {
       path: 'type/:id',
       name: 'Type',
       component: () => import('@/views/Type'),

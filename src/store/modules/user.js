@@ -1,5 +1,5 @@
-import {getToken, setToken, removeToken} from '@/utils/auth'
-import {GetToken} from "@/utils/request";
+import {getToken, removeToken, setToken} from '@/utils/auth'
+import {GetToken, ResetPwdOrigin} from "@/utils/request";
 
 const getDefaultState = () => {
   return {
@@ -24,6 +24,20 @@ const actions = {
     const {username, password} = userInfo;
     return new Promise((resolve, reject) => {
       GetToken(username.trim(), password).then(res => {
+        commit('SET_TOKEN', res.token);
+        setToken(res.token);
+        resolve()
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  },
+
+  // reset password
+  reset({commit}, userInfo) {
+    const {id, oldPwd, newPwd} = userInfo;
+    return new Promise((resolve, reject) => {
+      ResetPwdOrigin(id, oldPwd, newPwd).then(res => {
         commit('SET_TOKEN', res.token);
         setToken(res.token);
         resolve()
