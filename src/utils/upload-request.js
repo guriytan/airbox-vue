@@ -11,21 +11,21 @@ const uploadRequest = axios.create({
   },
 });
 
-export default function UploadFile(folderID, item) {
-  let url = "/file/upload?";
+export default function UploadFile(md5, folderID, item) {
+  let url = "/file/upload";
   if (folderID) {
-    url += "fid=" + folderID + "&";
+    url += "?fid=" + folderID;
   }
   let formData = new FormData();
+  formData.append('size', item.file.size)
+  formData.append('md5', md5)
   if (item.file.webkitRelativePath) {
-    let path = item.file.webkitRelativePath
-    formData.append(path.substring(0, path.lastIndexOf("/")), item.file);
-  } else {
-    formData.append('file', item.file);
+    formData.append('folder', path.substring(0, item.file.webkitRelativePath.lastIndexOf("/")))
   }
+  formData.append('file', item.file);
   return new Promise(((resolve, reject) => {
     uploadRequest({
-      url: url + 'size=' + item.file.size,
+      url: url,
       method: 'post',
       data: formData,
       cancelToken: item.cancelToken.token,

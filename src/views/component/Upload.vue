@@ -35,8 +35,9 @@
 </template>
 
 <script>
-  import UploadFile from "@/utils/upload-request";
   import axios from "axios";
+  import CalcMD5 from "@/utils/hash";
+  import UploadFile from "@/utils/upload-request";
 
   export default {
     name: "Upload",
@@ -92,7 +93,8 @@
           try {
             task.status = 1
             task.cancelToken = axios.CancelToken.source()
-            await UploadFile(this.fid, task)
+            let md5 = await CalcMD5(task.file)
+            await UploadFile(md5, this.fid, task)
             task.status = 2
           } catch (err) {
             task.status = 3
