@@ -88,6 +88,12 @@ export const constantRoutes = [
       meta: {title: 'Help'}
     }]
   },
+  {
+    path: '/share',
+    name: 'Share',
+    component: () => import('@/views/Share'),
+    meta: {title: 'Share'}
+  },
 
   // 404 page must be placed at the end !!!
   {path: '*', redirect: '/404', hidden: true}

@@ -1,11 +1,11 @@
 <template>
-  <el-dialog title="分享链接" :visible.sync="visible" width="30%" :before-close="handleClose">
+  <el-dialog title="分享文件" :visible.sync="visible" width="30%" :before-close="handleClose">
     <div class="share-qr">
       <vue-qr :text="link" :margin="0" colorDark="#38025B" colorLight="#fff"
-              :logoSrc="icon" :logoScale="0.4" :size="150"></vue-qr>
+              :logoSrc="icon" :logoScale="0.28" :size="150"></vue-qr>
     </div>
     <div class="share-link">
-      <span @click="copy()">{{ link }}</span>
+      <span @click="copy()" style="cursor: pointer" title="点击复制">{{ link }}</span>
     </div>
   </el-dialog>
 </template>

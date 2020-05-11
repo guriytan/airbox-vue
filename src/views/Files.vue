@@ -8,11 +8,11 @@
       <el-card class="path-card">
         <el-breadcrumb separator="/">
           <el-breadcrumb-item>
-            <svg-icon icon-class="refresh" class="title-icon" @click="mountData(folderID)"></svg-icon>
+            <svg-icon icon-class="refresh" class="title-icon click" @click="mountData(folderID)"></svg-icon>
           </el-breadcrumb-item>
-          <el-breadcrumb-item><span @click="mountData()">全部文件</span></el-breadcrumb-item>
-          <el-breadcrumb-item v-for="(path, index) in paths" :key="index" @click.native="mountData(path.ID)">
-            {{ path.Name }}
+          <el-breadcrumb-item><span @click="mountData()" class="click">全部文件</span></el-breadcrumb-item>
+          <el-breadcrumb-item v-for="(path, index) in paths" :key="index">
+            <span @click="mountData(path.ID)" class="click">{{ path.Name }}</span>
           </el-breadcrumb-item>
         </el-breadcrumb>
       </el-card>
@@ -27,7 +27,7 @@
           <el-table-column prop="Name" label="文件名" min-width="250" show-overflow-tooltip sortable>
             <template slot-scope="scope">
               <el-dropdown v-if="typeof scope.row.Type === 'undefined'" placement="bottom-end">
-                <span class="el-dropdown-link" @click="mountData(scope.row.ID)">{{ scope.row.Name}}</span>
+                <span class="el-dropdown-link click" @click="mountData(scope.row.ID)">{{ scope.row.Name }}</span>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item @click.native="showRenameDialog(scope.row.ID, scope.$index, scope.row.Name, 0)"><i
                     class="icons el-icon-edit"></i>重命名
@@ -44,7 +44,7 @@
                 </el-dropdown-menu>
               </el-dropdown>
               <el-dropdown v-else placement="bottom-end">
-                <span class="el-dropdown-link">{{ scope.row.Name}}</span>
+                <span class="el-dropdown-link click" @click="jump(scope.row)">{{ scope.row.Name }}</span>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item @click.native="downloadFile(scope.row.ID)"><i class="icons el-icon-download"></i>下载
                   </el-dropdown-item>
@@ -66,13 +66,7 @@
               </el-dropdown>
             </template>
           </el-table-column>
-          <el-table-column prop="Suffix" label="类型" min-width="80" sortable>
-            <template slot-scope="scope">
-              <router-link :to="{path:'/preview', query:{id:scope.row.ID, type:scope.row.Type}}">
-                <span>{{scope.row.Suffix}}</span>
-              </router-link>
-            </template>
-          </el-table-column>
+          <el-table-column prop="Suffix" label="类型" min-width="80" sortable></el-table-column>
           <el-table-column prop="Size" label="大小" min-width="80" sortable>
             <template slot-scope="scope">
               <span v-if="typeof scope.row.Type !== 'undefined'">{{ convertSize(scope.row.Size) }}</span>
@@ -105,6 +99,7 @@
   import defaultSettings from '@/settings'
   import {Delete, GetList, GetShareLink} from "@/utils/request";
   import bytesToSize from "@/utils/capacity"
+  import {EncodeLink} from "@/utils/validate";
 
   export default {
     name: 'Files',
@@ -140,7 +135,7 @@
           index: 0,
           copy: false
         },
-        folderID: "",
+        folderID: this.$route.query.fid || '',
         dataList: [], // 表格数据
         paths: [], // 目录路径
       }
@@ -193,8 +188,9 @@
       },
       getShare(id) {
         GetShareLink(id).then(response => {
+          let link = EncodeLink(response.link)
           this.shareObj.visible = true;
-          this.shareObj.link = defaultSettings.website + defaultSettings.baseAPI + "/info/share?link=" + response.link;
+          this.shareObj.link = defaultSettings.website + "#/share?link=" + link;
         })
       },
       showRenameDialog(id, index, name, type) {
@@ -238,6 +234,9 @@
       convertDate(date) {
         return new Date(date).toLocaleString().replace(/\//g, "-")
       },
+      jump(item) {
+        this.$router.push({path: '/preview', query: {id: item.ID, type: item.Type, fid: this.folderID}})
+      }
     }
   }
 </script>
@@ -246,6 +245,10 @@
   .icons {
     font-size: 15px;
     margin-right: 10px;
+  }
+
+  .click {
+    cursor: pointer;
   }
 
   .files-container {

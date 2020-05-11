@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300px" height="328px" viewBox="0 0 300 328" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.3 (67297) - http://www.bohemiancoding.com/sketch -->
+    <title>icon-nolink</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <polygon id="path-1" points="-8 55 104 68 216 55 216 81 104 68 -8 81"></polygon>
+        <path d="M60.3493551,13.3003937 C71.2894446,6.34269068 86.7994808,2 104,2 C121.378627,2 137.031581,6.4330917 147.989019,13.5173698 L173.165109,29.4216775 C189.181331,39.6255393 199,53.3747877 199,68.5 C199,99.9802307 156.467051,125.5 104,125.5 C51.5329488,125.5 9,99.9802307 9,68.5 C9,53.1224429 19.1490262,39.1671451 35.6473677,28.9139331 L60.323132,13.3003937 L60.3493551,13.3003937 Z" id="path-3"></path>
+        <path d="M94.5,53 C94.5,67.9116882 73.4573832,80 47.5,80 C21.5426168,80 0.5,67.9116882 0.5,53 L0.5,47 C0.5,21.2253967 21.5426168,0 47.5,0 C73.4573832,0 94.5,21.2253967 94.5,47 L94.5,53 Z" id="path-5"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-2">
+            <polygon id="Rectangle" points="0 0 300 0 300 328 0 328"></polygon>
+            <g id="Group-6" transform="translate(46.000000, 34.000000)">
+                <g id="Combined-Shape" transform="translate(0.000000, 17.500000)">
+                    <g id="Mask-+-Mask-Mask">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <g id="Mask" transform="translate(104.000000, 68.000000) rotate(-30.000000) translate(-104.000000, -68.000000) "></g>
+                        <ellipse id="Mask" stroke="#B2B2B2" stroke-width="2" stroke-linejoin="round" mask="url(#mask-2)" cx="104" cy="68.5" rx="108" ry="66"></ellipse>
+                        <ellipse id="Mask" stroke="#B2B2B2" stroke-width="2" stroke-linejoin="round" mask="url(#mask-2)" cx="104" cy="68.5" rx="120" ry="75"></ellipse>
+                    </g>
+                    <path d="M35.6473677,28.9139331 L60.323132,13.3003937 L80.219945,13.3003937 C87.8199663,12.1251272 95.7883113,11.5 104,11.5 C112.211689,11.5 120.180034,12.1251272 127.780055,13.3003937 L147.645552,13.3003937 L173.165109,29.4216775 C189.181331,39.6255393 199,53.3747877 199,68.5 C199,99.9802307 156.467051,125.5 104,125.5 C51.5329488,125.5 9,99.9802307 9,68.5 C9,53.1224429 19.1490262,39.1671451 35.6473677,28.9139331 Z" id="Mask" stroke="#B2B2B2" fill="#FFFFFF" stroke-linejoin="round"></path>
+                    <mask id="mask-4" fill="white">
+                        <use xlink:href="#path-3"></use>
+                    </mask>
+                    <use stroke="#B2B2B2" stroke-width="2" fill="#FFFFFF" stroke-linejoin="round" xlink:href="#path-3"></use>
+                    <ellipse id="Mask" stroke="#B2B2B2" stroke-width="2" fill="#FFFFFF" stroke-linejoin="round" mask="url(#mask-4)" cx="104" cy="35" rx="55" ry="37"></ellipse>
+                    <ellipse stroke="#B2B2B2" stroke-width="2" opacity="0.300000012" stroke-linejoin="round" mask="url(#mask-4)" cx="104" cy="52" rx="80" ry="48"></ellipse>
+                    <circle id="Oval" stroke="#B2B2B2" stroke-width="2" fill="#FFFFFF" stroke-linejoin="round" mask="url(#mask-4)" cx="104" cy="100" r="6"></circle>
+                    <ellipse id="Oval-Copy" stroke="#B2B2B2" stroke-width="2" fill="#FFFFFF" stroke-linejoin="round" mask="url(#mask-4)" transform="translate(31.500000, 72.000000) rotate(-320.000000) translate(-31.500000, -72.000000) " cx="31.5" cy="72" rx="4.5" ry="6"></ellipse>
+                    <ellipse id="Oval-Copy-2" stroke="#B2B2B2" stroke-width="2" fill="#FFFFFF" stroke-linejoin="round" mask="url(#mask-4)" transform="translate(177.500000, 72.000000) scale(-1, 1) rotate(-320.000000) translate(-177.500000, -72.000000) " cx="177.5" cy="72" rx="4.5" ry="6"></ellipse>
+                </g>
+                <g id="Combined-Shape" transform="translate(56.500000, 0.000000)">
+                    <mask id="mask-6" fill="white">
+                        <use xlink:href="#path-5"></use>
+                    </mask>
+                    <use id="Mask" stroke="#B2B2B2" stroke-width="2" fill="#FFFFFF" stroke-linejoin="round" xlink:href="#path-5"></use>
+                    <path d="M3.84935514,31.8003937 C14.7894446,24.8426907 30.2994808,20.5 47.5,20.5 C64.8786271,20.5 80.5315808,24.9330917 91.489019,32.0173698 L116.665109,47.9216775 C132.681331,58.1255393 142.5,71.8747877 142.5,87 C142.5,118.480231 99.9670512,144 47.5,144 C-4.96705123,144 -47.5,118.480231 -47.5,87 C-47.5,71.6224429 -37.3509738,57.6671451 -20.8526323,47.4139331 L3.82313195,31.8003937 L3.84935514,31.8003937 Z" stroke="#B2B2B2" stroke-width="2" opacity="0.400000006" stroke-linejoin="round" mask="url(#mask-6)"></path>
+                </g>
+                <ellipse id="Combined-Shape" stroke="#B2B2B2" stroke-width="2" opacity="0.300000012" stroke-linejoin="round" cx="104" cy="53" rx="47" ry="27"></ellipse>
+            </g>
+            <ellipse id="Mask-Copy" stroke="#2980FF" stroke-width="2" cx="150" cy="268" rx="69" ry="39"></ellipse>
+            <polyline id="Path-4" stroke="#2980FF" stroke-width="2" points="81.8634557 261.896861 87.8895866 239.707624 104.676957 177.893674"></polyline>
+            <path d="M195.305517,262.430781 L218.289819,177.941058" id="Path-4" stroke="#2980FF" stroke-width="2" transform="translate(206.797668, 220.185919) scale(-1, 1) translate(-206.797668, -220.185919) "></path>
+        </g>
+    </g>
+</svg>
