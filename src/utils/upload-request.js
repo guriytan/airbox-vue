@@ -20,7 +20,8 @@ export default function UploadFile(md5, folderID, item) {
   formData.append('size', item.file.size)
   formData.append('md5', md5)
   if (item.file.webkitRelativePath) {
-    formData.append('folder', path.substring(0, item.file.webkitRelativePath.lastIndexOf("/")))
+    let path = item.file.webkitRelativePath
+    formData.append('folder', path.substring(0, path.lastIndexOf("/")))
   }
   formData.append('file', item.file);
   return new Promise(((resolve, reject) => {

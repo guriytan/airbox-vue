@@ -17,61 +17,52 @@
         </el-breadcrumb>
       </el-card>
       <el-card class="files-card">
-        <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading">
+        <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading"
+                  @sort-change='sortData' :default-sort="{prop: 'CreatedAt', order: 'descending'}">
           <el-table-column prop="icon" label="" width="50">
             <template slot-scope="scope">
               <icon :type="scope.row.Type"></icon>
             </template>
           </el-table-column>
-          <el-table-column prop="Name" label="文件名" min-width="250" show-overflow-tooltip sortable>
+          <el-table-column prop="Name" label="文件名" min-width="250" show-overflow-tooltip sortable='custom'
+                           :sort-orders="['ascending', 'descending']">
             <template slot-scope="scope">
-              <el-dropdown v-if="typeof scope.row.Type === 'undefined'" placement="bottom-end">
-                <span class="el-dropdown-link click" @click="mountData(scope.row.ID)">{{ scope.row.Name }}</span>
+              <el-dropdown placement="bottom-end">
+                <span v-if="!scope.row.Folder" class="el-dropdown-link click" @click="mountData(scope.row.ID)">{{ scope.row.Name }}</span>
+                <span v-else class="el-dropdown-link click" @click="jump(scope.row)">{{ scope.row.Name }}</span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item @click.native="showRenameDialog(scope.row.ID, scope.$index, scope.row.Name, 0)"><i
+                  <el-dropdown-item v-if="scope.row.Folder" @click.native="downloadFile(scope.row.ID)"><i
+                    class="icons el-icon-download"></i>下载
+                  </el-dropdown-item>
+                  <el-dropdown-item v-if="scope.row.Folder" @click.native="getShare(scope.row.ID)"><i
+                    class="icons el-icon-share"></i>分享
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    @click.native="showRenameDialog(scope.row.ID, scope.$index, scope.row.Name, scope.row.Folder)"><i
                     class="icons el-icon-edit"></i>重命名
                   </el-dropdown-item>
-                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, 0, true)"><i
+                  <el-dropdown-item
+                    @click.native="showFolderDialog(scope.row.ID, scope.$index, scope.row.Folder, true)"><i
                     class="icons el-icon-copy-document"></i>复制到
                   </el-dropdown-item>
-                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, 0)"><i
+                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, scope.row.Folder)"><i
                     class="icons el-icon-scissors"></i>移动到
                   </el-dropdown-item>
-                  <el-dropdown-item divided @click.native="deleteF(0, scope.$index, scope.row.ID)"><i
-                    class="icons el-icon-delete"></i>删除
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-              <el-dropdown v-else placement="bottom-end">
-                <span class="el-dropdown-link click" @click="jump(scope.row)">{{ scope.row.Name }}</span>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item @click.native="downloadFile(scope.row.ID)"><i class="icons el-icon-download"></i>下载
-                  </el-dropdown-item>
-                  <el-dropdown-item @click.native="getShare(scope.row.ID)"><i class="icons el-icon-share"></i>分享
-                  </el-dropdown-item>
-                  <el-dropdown-item @click.native="showRenameDialog(scope.row.ID, scope.$index, scope.row.Name, 1)"><i
-                    class="icons el-icon-edit"></i>重命名
-                  </el-dropdown-item>
-                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, 1, true)"><i
-                    class="icons el-icon-copy-document"></i>复制到
-                  </el-dropdown-item>
-                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, 1)"><i
-                    class="icons el-icon-scissors"></i>移动到
-                  </el-dropdown-item>
-                  <el-dropdown-item divided @click.native="deleteF(1, scope.$index, scope.row.ID)"><i
+                  <el-dropdown-item divided @click.native="deleteF(scope.row.Folder, scope.$index, scope.row.ID)"><i
                     class="icons el-icon-delete"></i>删除
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </template>
           </el-table-column>
-          <el-table-column prop="Suffix" label="类型" min-width="80" sortable></el-table-column>
-          <el-table-column prop="Size" label="大小" min-width="80" sortable>
+          <el-table-column prop="Size" label="大小" min-width="100" sortable='custom'
+                           :sort-orders="['ascending', 'descending']">
             <template slot-scope="scope">
-              <span v-if="typeof scope.row.Type !== 'undefined'">{{ convertSize(scope.row.Size) }}</span>
+              <span v-if="scope.row.Folder">{{ convertSize(scope.row.Size) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="CreatedAt" label="日期" min-width="120" sortable>
+          <el-table-column prop="CreatedAt" label="日期" min-width="150" sortable='custom'
+                           :sort-orders="['ascending', 'descending']">
             <template slot-scope="scope">
               <span>{{ convertDate(scope.row.CreatedAt) }}</span>
             </template>
@@ -155,10 +146,23 @@
         GetList(path).then(res => {
           this.dataList = [];
           res.folders.forEach(item => {
-            this.dataList.push(item)
+            this.dataList.push({
+              ID: item.ID,
+              Type: -1,
+              Folder: 0,
+              Name: item.Name,
+              CreatedAt: item.CreatedAt
+            })
           });
           res.files.forEach(item => {
-            this.dataList.push(item)
+            this.dataList.push({
+              ID: item.ID,
+              Type: item.Type,
+              Folder: 1,
+              Name: item.Name,
+              Size: item.Size,
+              CreatedAt: item.CreatedAt
+            })
           });
           this.paths.length = 0;
           if (path) {
@@ -235,6 +239,38 @@
       },
       jump(item) {
         this.$router.push({path: '/preview', query: {id: item.ID, type: item.Type, fid: this.folderID}})
+      },
+      sortData(column) {
+        //获取字段名称和排序类型
+        let fieldName = column.prop, sortingType = column.order;
+        if (sortingType === "descending") {
+          this.dataList = this.dataList.sort((a, b) => {
+            let folder = this.judgeFolder(a, b)
+            if (folder) return folder
+            if (fieldName === "CreatedAt") {
+              return new Date(b[fieldName]) - new Date(a[fieldName])
+            } else {
+              return b[fieldName] > a[fieldName] ? 1 : -1
+            }
+          });
+        } else {
+          this.dataList = this.dataList.sort((a, b) => {
+            let folder = this.judgeFolder(a, b)
+            if (folder) return folder
+            if (fieldName === "CreatedAt") {
+              return new Date(a[fieldName]) - new Date(b[fieldName])
+            } else {
+              return b[fieldName] < a[fieldName] ? 1 : -1
+            }
+          });
+        }
+      },
+      judgeFolder(a, b) {
+        if (a.Folder === 1 && b.Folder === 0) {
+          return 1
+        } else if (b.Folder === 1 && a.Folder === 0) {
+          return -1
+        } else return 0
       }
     }
   }

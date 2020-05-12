@@ -70,7 +70,6 @@
         for (let i = 0; i < fileList.length; i++) {
           let task = {
             file: fileList[i],
-            name: fileList[i].name,
             cancelToken: null,
             percentage: 0,
             status: 0  // 0为等待上传，1为正在上传，2为上传完成，3为上传错误，4为取消上传
