@@ -17,8 +17,7 @@
         </el-breadcrumb>
       </el-card>
       <el-card class="files-card">
-        <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading"
-                  :default-sort="{prop: 'CreatedAt', order: 'descending'}">
+        <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading">
           <el-table-column prop="icon" label="" width="50">
             <template slot-scope="scope">
               <icon :type="scope.row.Type"></icon>
