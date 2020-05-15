@@ -18,7 +18,9 @@
       </el-card>
       <el-card class="files-card">
         <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading"
-                  @sort-change='sortData' :default-sort="{prop: 'CreatedAt', order: 'descending'}">
+                  @sort-change='sortData' :default-sort="{prop: 'CreatedAt', order: 'descending'}"
+                  @selection-change="selectChange">
+          <el-table-column type="selection" width="50"></el-table-column>
           <el-table-column prop="icon" label="" width="50">
             <template slot-scope="scope">
               <icon :type="scope.row.Type"></icon>
@@ -69,7 +71,8 @@
           </el-table-column>
         </el-table>
         <div class="content-tool">
-          <upload :fid="folderID" @loadData="mountData"></upload>
+          <upload v-show="selectToggle" :fid="folderID" @loadData="mountData"></upload>
+          <tools v-show="!selectToggle" :list="select" @loadData="mountData"></tools>
           <new-folder :fid="folderID" @loading="onLoading" @unloading="hideLoading"
                       @loadData="mountData"></new-folder>
         </div>
@@ -99,7 +102,8 @@
       RenameDialog: () => import("@/views/component/RenameDialog"),
       NewFolder: () => import("@/views/component/NewFolder"),
       Upload: () => import("@/views/component/Upload"),
-      CopyOrMove: () => import("@/views/component/CopyOrMove")
+      CopyOrMove: () => import("@/views/component/CopyOrMove"),
+      Tools: () => import("@/views/component/Tools")
     },
     data() {
       return {
@@ -128,6 +132,8 @@
         folderID: this.$route.query.fid || '',
         dataList: [], // 表格数据
         paths: [], // 目录路径
+        selectToggle: true,
+        select: [] // 选择的文件列表
       }
     },
     mounted() {
@@ -271,6 +277,14 @@
         } else if (b.Folder === 1 && a.Folder === 0) {
           return -1
         } else return 0
+      },
+      selectChange(val) {
+        if (val.length) {
+          this.select = val
+        } else {
+          this.select.length = 0
+        }
+        this.selectToggle = !val.length
       }
     }
   }
