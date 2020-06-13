@@ -166,7 +166,7 @@
               Type: item.Type,
               Folder: 1,
               Name: item.Name,
-              Size: item.Size,
+              Size: item.FileEntity.Size,
               CreatedAt: item.CreatedAt
             })
           });
@@ -281,6 +281,7 @@
       selectChange(val) {
         if (val.length) {
           this.select = val
+          console.log(val)
         } else {
           this.select.length = 0
         }

@@ -123,7 +123,7 @@
               this.timer = null;
             }
           }, 1000)
-        }
+        } else return
         SendRegister(this.ruleForm.username, this.ruleForm.email).then(() => {
           this.$message({
             message: "已发送验证码至邮箱",

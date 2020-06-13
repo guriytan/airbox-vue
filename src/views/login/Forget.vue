@@ -70,7 +70,7 @@
               this.timer = null;
             }
           }, 1000)
-        }
+        } else return
         this.$refs.ruleForm.validate((valid) => {
           if (valid) {
             ForgetPwd(this.ruleForm.user).then(() => {
