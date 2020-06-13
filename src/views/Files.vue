@@ -166,7 +166,7 @@
               Type: item.Type,
               Folder: 1,
               Name: item.Name,
-              Size: item.FileEntity.Size,
+              Size: item.FileInfo.Size,
               CreatedAt: item.CreatedAt
             })
           });
