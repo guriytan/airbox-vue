@@ -14,7 +14,8 @@
 </template>
 
 <script>
-  import {AddFolder} from "@/utils/request";
+  import {NewFile} from "@/utils/request";
+  import {FileTypeFolder} from "@/utils/type";
 
   export default {
     name: "NewFolder",
@@ -31,7 +32,7 @@
       addFolder() {
         if (this.name) {
           this.$emit("loading")
-          AddFolder(this.name, this.fid).then(() => {
+          NewFile(this.name, this.fid, FileTypeFolder).then(() => {
             this.$notify.success({
               title: '成功',
               message: '添加文件夹成功',

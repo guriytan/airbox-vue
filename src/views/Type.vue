@@ -24,14 +24,14 @@
           <el-table-column prop="Name" label="文件名" min-width="250" show-overflow-tooltip>
             <template slot-scope="scope">
               <el-dropdown placement="bottom-end">
-                <span class="el-dropdown-link">{{ scope.row.Name}}</span>
+                <span class="el-dropdown-link">{{ scope.row.name}}</span>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item><i class="icons el-icon-download"></i>下载</el-dropdown-item>
                   <el-dropdown-item><i class="icons el-icon-share"></i>分享</el-dropdown-item>
-                  <el-dropdown-item @click.native="showDialog(scope.row.ID, scope.$index, scope.row.Name)"><i
+                  <el-dropdown-item @click.native="showDialog(scope.row.id, scope.$index, scope.row.name)"><i
                     class="icons el-icon-edit"></i>重命名
                   </el-dropdown-item>
-                  <el-dropdown-item divided @click.native="deleteFile(scope.$index, scope.row.ID)"><i
+                  <el-dropdown-item divided @click.native="deleteFile(scope.$index, scope.row.id)"><i
                     class="icons el-icon-delete"></i>删除
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -42,18 +42,18 @@
           </el-table-column>
           <el-table-column prop="Size" label="大小" min-width="80">
             <template slot-scope="scope">
-              <span>{{ convertSize(scope.row.Size) }}</span>
+              <span>{{ convertSize(scope.row.size) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="Date" label="日期" min-width="120">
             <template slot-scope="scope">
-              <span>{{ convertData(scope.row.UpdatedAt) }}</span>
+              <span>{{ convertData(scope.row.updated_at) }}</span>
             </template>
           </el-table-column>
         </el-table>
       </el-card>
     </el-card>
-    <rename-dialog :visible="renameObj.visible" :type="renameObj.type" :id="renameObj.id" :name="renameObj.name"
+    <rename-dialog :visible="renameObj.visible" :folder="renameObj.folder" :id="renameObj.id" :name="renameObj.name"
                    :index="renameObj.index" @loading="onLoading" @unloading="hideLoading" @rename="renameData"
                    @hideDialog="hideRenameDialog"></rename-dialog>
   </div>
@@ -62,7 +62,7 @@
 <script>
   import {Delete, GetType} from "@/utils/request";
   import bytesToSize from "@/utils/capacity";
-  import {solveType, solveIcon} from "@/utils/type";
+  import {FileTypeFolder, solveType, solveIcon} from "@/utils/type";
   import {RenameDialog} from "@/views/component";
 
   export default {
@@ -74,7 +74,7 @@
         // 重命名
         renameObj: {
           visible: false,
-          type: 0,
+          folder: false,
           id: "",
           name: "",
           index: 0
@@ -95,7 +95,7 @@
       },
       mountData() {
         this.onLoading();
-        GetType(this.type).then(res => {
+        GetType("", this.type).then(res => {
           this.tableData.length = 0;
           res.files.forEach(item => {
             this.tableData.push(item)
@@ -107,7 +107,7 @@
       },
       deleteFile(index, id) {
         this.onLoading();
-        Delete(1, index, id).then(() => {
+        Delete(id).then(() => {
           this.$notify({
             title: '成功',
             message: '删除文件成功',
@@ -141,7 +141,7 @@
         this.renameObj.id = id;
         this.renameObj.index = index;
         this.renameObj.name = name;
-        this.renameObj.type = 1;
+        this.renameObj.folder = FileTypeFolder;
         this.renameObj.visible = true
       },
     }

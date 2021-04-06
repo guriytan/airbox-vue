@@ -12,7 +12,7 @@
           </el-breadcrumb-item>
           <el-breadcrumb-item><span @click="mountData()" class="click">全部文件</span></el-breadcrumb-item>
           <el-breadcrumb-item v-for="(path, index) in paths" :key="index">
-            <span @click="mountData(path.ID)" class="click">{{ path.Name }}</span>
+            <span @click="mountData(path.id)" class="click">{{ path.name }}</span>
           </el-breadcrumb-item>
         </el-breadcrumb>
       </el-card>
@@ -23,34 +23,34 @@
           <el-table-column type="selection" width="50"></el-table-column>
           <el-table-column prop="icon" label="" width="50">
             <template slot-scope="scope">
-              <icon :type="scope.row.Type"></icon>
+              <icon :type="scope.row.type"></icon>
             </template>
           </el-table-column>
           <el-table-column prop="Name" label="文件名" min-width="250" show-overflow-tooltip sortable='custom'
                            :sort-orders="['ascending', 'descending']">
             <template slot-scope="scope">
               <el-dropdown placement="bottom-end">
-                <span v-if="!scope.row.Folder" class="el-dropdown-link click" @click="mountData(scope.row.ID)">{{ scope.row.Name }}</span>
-                <span v-else class="el-dropdown-link click" @click="jump(scope.row)">{{ scope.row.Name }}</span>
+                <span v-if="isFolder(scope.row.type)" class="el-dropdown-link click" @click="mountData(scope.row.id)">{{ scope.row.name }}</span>
+                <span v-else class="el-dropdown-link click" @click="jump(scope.row)">{{ scope.row.name }}</span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-if="scope.row.Folder" @click.native="downloadFile(scope.row.ID)"><i
+                  <el-dropdown-item v-if="!isFolder(scope.row.type)" @click.native="downloadFile(scope.row.id)"><i
                     class="icons el-icon-download"></i>下载
                   </el-dropdown-item>
-                  <el-dropdown-item v-if="scope.row.Folder" @click.native="getShare(scope.row.ID)"><i
+                  <el-dropdown-item v-if="!isFolder(scope.row.type)" @click.native="getShare(scope.row.id)"><i
                     class="icons el-icon-share"></i>分享
                   </el-dropdown-item>
                   <el-dropdown-item
-                    @click.native="showRenameDialog(scope.row.ID, scope.$index, scope.row.Name, scope.row.Folder)"><i
+                    @click.native="showRenameDialog(scope.row.id, scope.$index, scope.row.name, isFolder(scope.row.type))"><i
                     class="icons el-icon-edit"></i>重命名
                   </el-dropdown-item>
                   <el-dropdown-item
-                    @click.native="showFolderDialog(scope.row.ID, scope.$index, scope.row.Folder, true)"><i
+                    @click.native="showFolderDialog(scope.row.id, scope.$index, isFolder(scope.row.type), 1)"><i
                     class="icons el-icon-copy-document"></i>复制到
                   </el-dropdown-item>
-                  <el-dropdown-item @click.native="showFolderDialog(scope.row.ID, scope.$index, scope.row.Folder)"><i
+                  <el-dropdown-item @click.native="showFolderDialog(scope.row.id, scope.$index, isFolder(scope.row.type))"><i
                     class="icons el-icon-scissors"></i>移动到
                   </el-dropdown-item>
-                  <el-dropdown-item divided @click.native="deleteF(scope.row.Folder, scope.$index, scope.row.ID)"><i
+                  <el-dropdown-item divided @click.native="deleteF(isFolder(scope.row.type), scope.$index, scope.row.id)"><i
                     class="icons el-icon-delete"></i>删除
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -60,13 +60,13 @@
           <el-table-column prop="Size" label="大小" min-width="100" sortable='custom'
                            :sort-orders="['ascending', 'descending']">
             <template slot-scope="scope">
-              <span v-if="scope.row.Folder">{{ convertSize(scope.row.Size) }}</span>
+              <span v-if="!isFolder(scope.row.type)">{{ convertSize(scope.row.size) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="CreatedAt" label="日期" min-width="150" sortable='custom'
                            :sort-orders="['ascending', 'descending']">
             <template slot-scope="scope">
-              <span>{{ convertDate(scope.row.CreatedAt) }}</span>
+              <span>{{ convertDate(scope.row.update_at) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -78,10 +78,10 @@
         </div>
       </el-card>
     </el-card>
-    <copy-or-move :visible="copyOrMoveObj.visible" :type="copyOrMoveObj.type" :id="copyOrMoveObj.id" :cid="folderID"
-                  :index="copyOrMoveObj.index" :copy="copyOrMoveObj.copy" @loading="onLoading" @unloading="hideLoading"
+    <copy-or-move :visible="copyOrMoveObj.visible" :folder="copyOrMoveObj.folder" :id="copyOrMoveObj.id" :cid="folderID"
+                  :index="copyOrMoveObj.index" :opt="copyOrMoveObj.opt" @loading="onLoading" @unloading="hideLoading"
                   @deleteData="deleteData" @hide="hideCopyOrMoveDialog"></copy-or-move>
-    <rename-dialog :visible="renameObj.visible" :type="renameObj.type" :id="renameObj.id" :name="renameObj.name"
+    <rename-dialog :visible="renameObj.visible" :folder="renameObj.folder" :id="renameObj.id" :name="renameObj.name"
                    :index="renameObj.index" @loading="onLoading" @unloading="hideLoading" @rename="renameData"
                    @hide="hideRenameDialog"></rename-dialog>
     <share-link :link="shareObj.link" :visible="shareObj.visible" @hide="hideShareDialog"></share-link>
@@ -90,9 +90,11 @@
 
 <script>
   import defaultSettings from '@/settings'
+  import Moment from 'moment'
   import {Delete, GetList, GetShareLink} from "@/utils/request";
   import bytesToSize from "@/utils/capacity"
   import {EncodeLink} from "@/utils/validate";
+  import {FileTypeFolder, OperationTypeMove} from "@/utils/type";
 
   export default {
     name: 'Files',
@@ -116,7 +118,7 @@
         // 重命名
         renameObj: {
           visible: false,
-          type: 0,
+          folder: false,
           id: "",
           name: "",
           index: 0
@@ -124,10 +126,10 @@
         // 移动或复制
         copyOrMoveObj: {
           visible: false,
-          type: 0,
+          folder: false,
           id: "",
           index: 0,
-          copy: false
+          opt: 0
         },
         folderID: this.$route.query.fid || '',
         dataList: [], // 表格数据
@@ -151,24 +153,23 @@
         this.folderID = path
         GetList(path).then(res => {
           this.dataList = [];
-          res.folders.forEach(item => {
-            this.dataList.push({
-              ID: item.ID,
-              Type: -1,
-              Folder: 0,
-              Name: item.Name,
-              CreatedAt: item.CreatedAt
-            })
-          });
-          res.files.forEach(item => {
-            this.dataList.push({
-              ID: item.ID,
-              Type: item.Type,
-              Folder: 1,
-              Name: item.Name,
-              Size: item.FileInfo.Size,
-              CreatedAt: item.CreatedAt
-            })
+          res.file.forEach(item => {
+            if (item.type === FileTypeFolder) {
+              this.dataList.push({
+                id: item.id,
+                type: item.type,
+                name: item.name,
+                update_at: item.update_at
+              })
+            } else {
+              this.dataList.push({
+                id: item.id,
+                type: item.type,
+                name: item.name,
+                size: item.file_info.size,
+                update_at: item.update_at
+              })
+            }
           });
           this.paths.length = 0;
           if (path) {
@@ -184,10 +185,10 @@
       },
       deleteF(type, index, id) {
         this.onLoading();
-        Delete(type, id).then(() => {
+        Delete(id).then(() => {
           this.$notify.success({
             title: '成功',
-            message: type === 0 ? '删除文件夹成功' : '删除文件成功',
+            message: type ? '删除文件夹成功' : '删除文件成功',
           });
           this.deleteData(index)
           this.hideLoading();
@@ -202,18 +203,18 @@
           this.shareObj.link = defaultSettings.website + "#/share?link=" + link;
         })
       },
-      showRenameDialog(id, index, name, type) {
+      showRenameDialog(id, index, name, folder) {
         this.renameObj.id = id;
         this.renameObj.index = index;
         this.renameObj.name = name;
-        this.renameObj.type = type;
+        this.renameObj.folder = folder;
         this.renameObj.visible = true
       },
-      showFolderDialog(id, index, type, copy) {
+      showFolderDialog(id, index, isFolder, opt) {
         this.copyOrMoveObj.id = id;
         this.copyOrMoveObj.index = index;
-        this.copyOrMoveObj.copy = copy || false;
-        this.copyOrMoveObj.type = type;
+        this.copyOrMoveObj.opt = opt || OperationTypeMove;
+        this.copyOrMoveObj.folder = isFolder;
         this.copyOrMoveObj.visible = true
       },
       deleteData(index) {
@@ -241,7 +242,7 @@
         return bytesToSize(size)
       },
       convertDate(date) {
-        return new Date(date).toLocaleString().replace(/\//g, "-")
+        return new Moment(date).format("YYYY-MM-DD hh:mm:ss")
       },
       jump(item) {
         this.$router.push({path: '/preview', query: {id: item.ID, type: item.Type, fid: this.folderID}})
@@ -272,9 +273,9 @@
         }
       },
       judgeFolder(a, b) {
-        if (a.Folder === 1 && b.Folder === 0) {
+        if (this.isFolder(a.Type) && !this.isFolder(b.Type)) {
           return 1
-        } else if (b.Folder === 1 && a.Folder === 0) {
+        } else if (this.isFolder(b.Type) && !this.isFolder(a.Type)) {
           return -1
         } else return 0
       },
@@ -286,6 +287,9 @@
           this.select.length = 0
         }
         this.selectToggle = !val.length
+      },
+      isFolder(type){
+        return type === FileTypeFolder
       }
     }
   }

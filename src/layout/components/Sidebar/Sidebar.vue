@@ -24,32 +24,32 @@
           <svg-icon icon-class="types"/>
           <span slot='title'>Types</span>
         </template>
-        <app-link :to="'/type/0'">
-          <el-menu-item :index="'/type/0'" class="nest-menu">
+        <app-link :to="'/type/1'">
+          <el-menu-item :index="'/type/1'" class="nest-menu">
             <svg-icon icon-class="music"/>
             <span slot='title'>Music</span>
           </el-menu-item>
         </app-link>
-        <app-link :to="'/type/1'">
-          <el-menu-item :index="'/type/1'" class="nest-menu">
+        <app-link :to="'/type/2'">
+          <el-menu-item :index="'/type/2'" class="nest-menu">
             <svg-icon icon-class="video"/>
             <span slot='title'>Video</span>
           </el-menu-item>
         </app-link>
-        <app-link :to="'/type/2'">
-          <el-menu-item :index="'/type/2'" class="nest-menu">
+        <app-link :to="'/type/3'">
+          <el-menu-item :index="'/type/3'" class="nest-menu">
             <svg-icon icon-class="document"/>
             <span slot='title'>Document</span>
           </el-menu-item>
         </app-link>
-        <app-link :to="'/type/3'">
-          <el-menu-item :index="'/type/3'" class="nest-menu">
+        <app-link :to="'/type/4'">
+          <el-menu-item :index="'/type/4'" class="nest-menu">
             <svg-icon icon-class="picture"/>
             <span slot='title'>Picture</span>
           </el-menu-item>
         </app-link>
-        <app-link :to="'/type/4'">
-          <el-menu-item :index="'/type/4'" class="nest-menu">
+        <app-link :to="'/type/0'">
+          <el-menu-item :index="'/type/0'" class="nest-menu">
             <svg-icon icon-class="other"/>
             <span slot='title'>Other</span>
           </el-menu-item>

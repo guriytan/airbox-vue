@@ -1,28 +1,44 @@
+export const OperationTypeRename = 1
+export const OperationTypeCopy = 2
+export const OperationTypeMove = 3
+
+export const FileTypeOther = 0
+export const FileTypeMusic = 1
+export const FileTypeVideo = 2
+export const FileTypeDoc = 3
+export const FileTypePic = 4
+export const FileTypeFolder = 5
+
 export function solveType(type) {
-  if (type === '0') {
-    return '音乐'
-  } else if (type === '1') {
-    return '视频'
-  } else if (type === '2') {
-    return '文档'
-  } else if (type === '3') {
-    return '图像'
-  } else {
-    return '其他'
+  switch (type) {
+    case FileTypeMusic:
+      return '音乐'
+    case FileTypeVideo:
+      return '视频'
+    case FileTypeDoc:
+      return '文档'
+    case FileTypePic:
+      return '图像'
+    case FileTypeFolder:
+      return '文件夹'
+    default:
+      return '其他'
   }
 }
 
-
 export function solveIcon(type) {
-  if (type === '0') {
-    return 'music'
-  } else if (type === '1') {
-    return 'video'
-  } else if (type === '2') {
-    return 'document'
-  } else if (type === '3') {
-    return 'picture'
-  } else {
-    return 'other'
+  switch (type) {
+    case FileTypeMusic:
+      return 'music'
+    case FileTypeVideo:
+      return 'video'
+    case FileTypeDoc:
+      return 'document'
+    case FileTypePic:
+      return 'picture'
+    case FileTypeFolder:
+      return 'folder'
+    default:
+      return 'other'
   }
 }

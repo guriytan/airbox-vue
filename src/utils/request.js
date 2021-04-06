@@ -2,18 +2,17 @@ import axios from 'axios'
 import defaultSettings from '@/settings'
 import {MessageBox, Message} from 'element-ui'
 import store from '@/store'
-import Qs from "qs"
 import {getToken} from "@/utils/auth";
 
 const normalRequest = axios.create({
   baseURL: defaultSettings.baseAPI,
   timeout: 5000,
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
+    'Content-Type': 'application/json',
   },
   transformRequest: [function (data) {
-    // 这里可以在发送请求之前对请求数据做处理，比如form-data格式化等，这里可以使用开头引入的Qs（这个模块在安装axios的时候就已经安装了，不需要另外安装）
-    return Qs.stringify(data);
+    // 这里可以在发送请求之前对请求数据做处理，比如form-data格式化等
+    return JSON.stringify(data);
   }],
 });
 
@@ -81,10 +80,10 @@ normalRequest.interceptors.response.use(
   }
 );
 
+// info
 export function GetList(path) {
-  let url = "/info/list" + (path ? "?fid=" + path : "");
   return new Promise(((resolve, reject) => {
-    normalRequest.get(url).then(response => {
+    normalRequest.get("/info/list", {params: {father_id: path}}).then(response => {
       resolve(response)
     }).catch(() => {
       reject()
@@ -100,9 +99,9 @@ export function GetUserInfo() {
   }))
 }
 
-export function GetType(type) {
+export function GetType(fid, type) {
   return new Promise((resolve, reject) => {
-    normalRequest.get("/info/type?type=" + type).then(response => {
+    normalRequest.get("/info/type", {params: {father_id: fid, type: type}}).then(response => {
       resolve(response)
     }).catch(() => {
       reject()
@@ -110,9 +109,10 @@ export function GetType(type) {
   })
 }
 
+// auth
 export function GetToken(username, password) {
   return new Promise((resolve, reject) => {
-    normalRequest.post('/auth/token', {user: username, password: password}).then(response => {
+    normalRequest.post('/auth/token', {user_key: username, password: password}).then(response => {
       resolve(response)
     }).catch(error => {
       reject(error)
@@ -130,7 +130,7 @@ export function SendDeleteUser() {
 
 export function GetShareLink(id) {
   return new Promise((resolve => {
-    normalRequest.post("/auth/share", {id: id}).then(response => {
+    normalRequest.post("/auth/share", {file_id: id}).then(response => {
       resolve(response)
     })
   }))
@@ -138,7 +138,7 @@ export function GetShareLink(id) {
 
 export function SendRegister(name, email) {
   return new Promise(resolve => {
-    normalRequest.post('/auth/register', {username: name, email: email,}).then(() => {
+    normalRequest.post('/auth/register', {username: name, email: email}).then(() => {
       resolve()
     });
   })
@@ -146,7 +146,7 @@ export function SendRegister(name, email) {
 
 export function ForgetPwd(user) {
   return new Promise(resolve => {
-    normalRequest.post('/auth/password', {user: user}).then(() => {
+    normalRequest.post('/auth/password', {user_key: user}).then(() => {
       resolve()
     })
   })
@@ -154,35 +154,16 @@ export function ForgetPwd(user) {
 
 export function SendResetEmail(email, password) {
   return new Promise(resolve => {
-    normalRequest.post('/auth/email', {email: email, password: password,}).then(() => {
+    normalRequest.post('/auth/email', {email: email, password: password}).then(() => {
       resolve()
     });
   })
 }
 
-export function GetFolder(fid) {
-  let url = '/folder/get' + (fid !== '0' ? '?fid=' + fid : '')
-  return new Promise(resolve => {
-    normalRequest.get(url).then(response => {
-      resolve(response.folder)
-    });
-  })
-}
-
-export function AddFolder(name, fid) {
+// file
+export function NewFile(name, fid, type) {
   return new Promise(((resolve, reject) => {
-    normalRequest.post("/folder/new", {name: name, fid: fid}).then(response => {
-      resolve(response.folder)
-    }).catch(() => {
-      reject()
-    });
-  }))
-}
-
-export function Delete(type, id) {
-  let url = (type === 0 ? "/folder/" : "/file/") + id
-  return new Promise(((resolve, reject) => {
-    normalRequest.delete(url).then(() => {
+    normalRequest.post("/new", {name: name, father_id: fid, type: type}).then(() => {
       resolve()
     }).catch(() => {
       reject()
@@ -190,11 +171,23 @@ export function Delete(type, id) {
   }))
 }
 
-export function Rename(type, name, id) {
-  let url = (type === 0 ? "/folder/" : "/file/") + id
+export function Delete(id) {
   return new Promise(((resolve, reject) => {
-    normalRequest.put(url, {
+    normalRequest.delete("/file/" + id).then(() => {
+      resolve()
+    }).catch(() => {
+      reject()
+    })
+  }))
+}
+
+export function Update(id, fid, name, type) {
+  return new Promise(((resolve, reject) => {
+    normalRequest.put("/file/update", {
+      file_id: id,
+      father_id: fid,
       name: name,
+      opt_type: type
     }).then(() => {
       resolve()
     }).catch(() => {
@@ -203,20 +196,7 @@ export function Rename(type, name, id) {
   }))
 }
 
-export function CopyOrMove(type, id, fid, copy) {
-  let url = (type === 0 ? "/folder/" : "/file/") + id
-  return new Promise(((resolve, reject) => {
-    normalRequest.put(url, {
-      fid: fid,
-      copy: copy
-    }).then(() => {
-      resolve()
-    }).catch(() => {
-      reject()
-    });
-  }))
-}
-
+// user
 export function Register(name, pwd, email, code) {
   return new Promise(resolve => {
     normalRequest.post('/user/new', {
@@ -240,7 +220,7 @@ export function ResetPwd(token, pwd) {
 
 export function ResetEmail(id, email, code) {
   return new Promise((resolve => {
-    normalRequest.put('/user/' + id + '/email', {email: email, code: code,}).then(response => {
+    normalRequest.put('/user/email/'+id, {email: email, code: code}).then(response => {
       resolve(response)
     });
   }))
@@ -248,7 +228,7 @@ export function ResetEmail(id, email, code) {
 
 export function ResetPwdOrigin(id, oldPwd, newPwd) {
   return new Promise((resolve => {
-    normalRequest.put('/user/' + id + '/password', {origin: oldPwd, password: newPwd,}).then(() => {
+    normalRequest.put('/user/password/'+id, {origin: oldPwd, password: newPwd}).then(() => {
       resolve()
     });
   }))
@@ -256,7 +236,7 @@ export function ResetPwdOrigin(id, oldPwd, newPwd) {
 
 export function DeleteUser(id, code) {
   return new Promise(resolve => {
-    normalRequest.delete('/user/' + id + '?code=' + code).then(() => {
+    normalRequest.delete('/user/' + id, {params: {code: code}}).then(() => {
       resolve()
     });
   })

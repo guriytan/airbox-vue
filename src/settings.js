@@ -25,5 +25,5 @@ module.exports = {
    * @description Whether show the api
    */
   // baseAPI: 'api'
-  baseAPI: 'http://localhost:9000'
+  baseAPI: 'http://localhost:8080'
 };

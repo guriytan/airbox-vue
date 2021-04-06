@@ -11,21 +11,22 @@
 </template>
 
 <script>
-  import {CopyOrMove, GetFolder} from "@/utils/request";
+  import {Update, GetType} from "@/utils/request";
+  import {FileTypeFolder, OperationTypeCopy, OperationTypeMove} from "@/utils/type";
 
   export default {
     name: "CopyOrMove",
     props: {
       visible: Boolean,
-      type: Number,
+      folder: Boolean,
       id: String,
       index: Number,
-      copy: Boolean,
+      opt: Number,
       cid: String
     },
     computed: {
       title() {
-        return this.copy ? "复制" : "移动"
+        return this.opt === OperationTypeCopy ? "复制" : "移动"
       }
     },
     watch: {
@@ -60,10 +61,10 @@
           }]);
         }
         this.fid = node.data.id
-        GetFolder(node.data.id).then(res => {
+        GetType(node.data.id, FileTypeFolder).then(res => {
           let data = []
           res.forEach(item => {
-            data.push({id: item.ID, name: item.Name})
+            data.push({id: item.id, name: item.name})
           });
           resolve(data)
         })
@@ -78,13 +79,13 @@
         }
         if (!(!this.fid && typeof this.cid === 'undefined') && this.cid !== this.fid) {
           this.$emit("loading")
-          CopyOrMove(this.type, this.id, this.fid, this.copy).then(() => {
+          Update(this.id, this.fid,"", this.opt).then(() => {
             this.$notify.success({
               title: '成功',
               message: this.title + '成功',
             });
             this.$emit("unloading")
-            if (!this.copy) {
+            if (this.opt === OperationTypeMove) {
               this.$emit("deleteData", this.index)
             }
           }).catch(() => {

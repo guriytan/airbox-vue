@@ -201,14 +201,16 @@
     },
     mounted() {
       GetUserInfo().then(res => {
-        res.count.forEach(item => {
-          this.files.rows.push({'类型': solveType(item.Type.toString()), '数量': item.Count})
-        })
-        this.total.rows.push({'容量': '已使用容量', '大小': res.info.Storage.CurrentSize})
-        this.total.rows.push({'容量': '剩余容量', '大小': (res.info.Storage.MaxSize - res.info.Storage.CurrentSize)})
-        this.formPwd.id = res.info.id;
-        this.user.name = res.info.Name;
-        this.user.email = res.info.Email;
+        if (res.count) {
+          res.count.forEach(item => {
+            this.files.rows.push({'类型': solveType(item.type), '数量': item.count})
+          })
+        }
+        this.total.rows.push({'容量': '已使用容量', '大小': res.user_info.storage.current_size})
+        this.total.rows.push({'容量': '剩余容量', '大小': (res.user_info.storage.max_size - res.user_info.storage.current_size)})
+        this.formPwd.id = res.user_info.id;
+        this.user.name = res.user_info.name;
+        this.user.email = res.user_info.email;
       })
     },
     methods: {

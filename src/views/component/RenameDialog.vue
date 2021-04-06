@@ -11,13 +11,14 @@
 </template>
 
 <script>
-  import {Rename} from "@/utils/request";
+  import {Update} from "@/utils/request";
+  import {OperationTypeRename} from "@/utils/type";
 
   export default {
     name: "RenameDialog",
     props: {
       visible: Boolean,
-      type: Number,
+      folder: Boolean,
       id: String,
       name: String,
       index: Number
@@ -25,7 +26,7 @@
     computed: {
       title() {
         this.rename = this.name
-        return this.type === 0 ? "重命名文件夹" : "重命名文件"
+        return this.folder ? "重命名文件夹" : "重命名文件"
       }
     },
     data() {
@@ -37,7 +38,7 @@
       submitRename() {
         if (this.rename) {
           this.$emit("loading")
-          Rename(this.type, this.rename, this.id).then(() => {
+          Update(this.id, "", this.rename, OperationTypeRename).then(() => {
             this.$notify.success({
               title: '成功',
               message: '重命名文件成功',
