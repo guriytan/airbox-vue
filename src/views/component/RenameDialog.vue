@@ -38,7 +38,7 @@
       submitRename() {
         if (this.rename) {
           this.$emit("loading")
-          Update(this.id, "", this.rename, OperationTypeRename).then(() => {
+          Update(this.id, "0", this.rename, OperationTypeRename).then(() => {
             this.$notify.success({
               title: '成功',
               message: '重命名文件成功',

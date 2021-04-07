@@ -12,13 +12,13 @@
           </el-breadcrumb-item>
           <el-breadcrumb-item><span @click="mountData()" class="click">全部文件</span></el-breadcrumb-item>
           <el-breadcrumb-item v-for="(path, index) in paths" :key="index">
-            <span @click="mountData(path.id)" class="click">{{ path.name }}</span>
+            <span @click="mountData(path.id, path.name, index)" class="click">{{ path.name }}</span>
           </el-breadcrumb-item>
         </el-breadcrumb>
       </el-card>
       <el-card class="files-card">
         <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading"
-                  @sort-change='sortData' :default-sort="{prop: 'CreatedAt', order: 'descending'}"
+                  @sort-change='sortData' :default-sort="{prop: 'UpdatedAt', order: 'descending'}"
                   @selection-change="selectChange">
           <el-table-column type="selection" width="50"></el-table-column>
           <el-table-column prop="icon" label="" width="50">
@@ -30,7 +30,7 @@
                            :sort-orders="['ascending', 'descending']">
             <template slot-scope="scope">
               <el-dropdown placement="bottom-end">
-                <span v-if="isFolder(scope.row.type)" class="el-dropdown-link click" @click="mountData(scope.row.id)">{{ scope.row.name }}</span>
+                <span v-if="isFolder(scope.row.type)" class="el-dropdown-link click" @click="mountData(scope.row.id, scope.row.name, -1)">{{ scope.row.name }}</span>
                 <span v-else class="el-dropdown-link click" @click="jump(scope.row)">{{ scope.row.name }}</span>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item v-if="!isFolder(scope.row.type)" @click.native="downloadFile(scope.row.id)"><i
@@ -44,7 +44,7 @@
                     class="icons el-icon-edit"></i>重命名
                   </el-dropdown-item>
                   <el-dropdown-item
-                    @click.native="showFolderDialog(scope.row.id, scope.$index, isFolder(scope.row.type), 1)"><i
+                    @click.native="showFolderDialog(scope.row.id, scope.$index, isFolder(scope.row.type), 2)"><i
                     class="icons el-icon-copy-document"></i>复制到
                   </el-dropdown-item>
                   <el-dropdown-item @click.native="showFolderDialog(scope.row.id, scope.$index, isFolder(scope.row.type))"><i
@@ -63,7 +63,7 @@
               <span v-if="!isFolder(scope.row.type)">{{ convertSize(scope.row.size) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="CreatedAt" label="日期" min-width="150" sortable='custom'
+          <el-table-column prop="UpdatedAt" label="日期" min-width="150" sortable='custom'
                            :sort-orders="['ascending', 'descending']">
             <template slot-scope="scope">
               <span>{{ convertDate(scope.row.updated_at) }}</span>
@@ -131,7 +131,7 @@
           index: 0,
           opt: 0
         },
-        folderID: this.$route.query.fid || '',
+        folderID: this.$route.query.fid || '0',
         dataList: [], // 表格数据
         paths: [], // 目录路径
         selectToggle: true,
@@ -140,7 +140,6 @@
     },
     mounted() {
       this.mountData()
-      // Moment.locale("zh-cn")
     },
     methods: {
       downloadFile(id) {
@@ -149,40 +148,33 @@
         elemIF.style.display = 'none'
         document.body.appendChild(elemIF)
       },
-      mountData(path) {
+      mountData(fid, name, index) {
         this.onLoading();
-        this.folderID = path
-        GetList(path).then(res => {
+        this.folderID = fid
+        GetList(fid).then(res => {
           this.dataList = [];
           res.files.forEach(item => {
-            if (item.type === FileTypeFolder) {
-              this.dataList.push({
-                id: item.id,
-                type: item.type,
-                name: item.name,
-                updated_at: item.updated_at
-              })
-            } else {
-              this.dataList.push({
-                id: item.id,
-                type: item.type,
-                name: item.name,
-                size: item.file_info.size,
-                updated_at: item.updated_at
-              })
-            }
+            this.dataList.push({
+              id: item.id,
+              type: item.type,
+              name: item.name,
+              size: item.file_info.size,
+              updated_at: item.updated_at
+            })
           });
-          this.paths.length = 0;
-          if (path) {
-            res.path.reverse();
-            res.path.forEach(item => {
-              this.paths.push(item)
-            });
-          }
           this.hideLoading();
         }).catch(() => {
           this.hideLoading();
         })
+        if (index !== undefined) {
+          if (index === -1) {
+            this.paths.push({name: name, id: fid})
+          } else {
+            this.paths.length = index+1
+          }
+        } else if (fid === undefined) {
+          this.paths.length = 0
+        }
       },
       deleteF(type, index, id) {
         this.onLoading();
@@ -222,7 +214,7 @@
         this.dataList.splice(index, 1)
       },
       renameData(index, name) {
-        this.dataList[index].Name = name
+        this.dataList[index].name = name
       },
       onLoading() {
         this.loading = true
@@ -246,7 +238,7 @@
         return new Moment(date).format("YYYY-MM-DD hh:mm:ss")
       },
       jump(item) {
-        this.$router.push({path: '/preview', query: {id: item.ID, type: item.Type, fid: this.folderID}})
+        this.$router.push({path: '/preview', query: {id: item.id, type: item.type, fid: this.folderID}})
       },
       sortData(column) {
         //获取字段名称和排序类型
@@ -255,7 +247,7 @@
           this.dataList = this.dataList.sort((a, b) => {
             let folder = this.judgeFolder(a, b)
             if (folder) return folder
-            if (fieldName === "CreatedAt") {
+            if (fieldName === "updated_at") {
               return new Date(b[fieldName]) - new Date(a[fieldName])
             } else {
               return b[fieldName] > a[fieldName] ? 1 : -1
@@ -265,7 +257,7 @@
           this.dataList = this.dataList.sort((a, b) => {
             let folder = this.judgeFolder(a, b)
             if (folder) return folder
-            if (fieldName === "CreatedAt") {
+            if (fieldName === "updated_at") {
               return new Date(a[fieldName]) - new Date(b[fieldName])
             } else {
               return b[fieldName] < a[fieldName] ? 1 : -1

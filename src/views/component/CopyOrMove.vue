@@ -31,7 +31,6 @@
     },
     watch: {
       dialogId: function (val) {
-        console.log(val)
         if (val !== 0) {
           this.node.childNodes = [];//把存起来的node的子节点清空，不然会界面会出现重复树！
           this.loadNode(this.node, this.resolve);//再次执行懒加载的方法
@@ -63,7 +62,7 @@
         this.fid = node.data.id
         GetType(node.data.id, FileTypeFolder).then(res => {
           let data = []
-          res.forEach(item => {
+          res.files.forEach(item => {
             data.push({id: item.id, name: item.name})
           });
           resolve(data)
@@ -73,9 +72,6 @@
         if (this.fid === this.id) {
           this.$message.warning("不能" + this.title + "自身")
           return
-        }
-        if (this.fid === '0') {
-          this.fid = ''
         }
         if (!(!this.fid && typeof this.cid === 'undefined') && this.cid !== this.fid) {
           this.$emit("loading")

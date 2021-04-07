@@ -9,11 +9,11 @@
         <audio :src="link" controls="controls" style="margin-top: 10px"></audio>
       </div>
       <video v-else-if="type === 2" :src="link" controls="controls"></video>
+      <img v-else-if="type === 4" :src="link" alt="" width="100%"/>
       <div v-else class="no-support">
         <svg-icon icon-class="no-link" class="svg-icon"></svg-icon>
         <div class="info">不支持预览</div>
       </div>
-      <img v-else-if="type === 4" :src="link" alt="" width="100%"/>
       <div class="button-container">
         <span class="item"><el-button type="primary" round @click="downloadFile">下载</el-button></span>
         <span class="item"><el-button type="warning" round @click="getShare">分享</el-button></span>
