@@ -163,7 +163,7 @@ export function SendResetEmail(email, password) {
 // file
 export function NewFile(name, fid, type) {
   return new Promise(((resolve, reject) => {
-    normalRequest.post("/new", {name: name, father_id: fid, type: type}).then(() => {
+    normalRequest.post("/file/new", {name: name, father_id: fid, type: type}).then(() => {
       resolve()
     }).catch(() => {
       reject()

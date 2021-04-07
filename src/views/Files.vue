@@ -66,7 +66,7 @@
           <el-table-column prop="CreatedAt" label="日期" min-width="150" sortable='custom'
                            :sort-orders="['ascending', 'descending']">
             <template slot-scope="scope">
-              <span>{{ convertDate(scope.row.update_at) }}</span>
+              <span>{{ convertDate(scope.row.updated_at) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -140,6 +140,7 @@
     },
     mounted() {
       this.mountData()
+      // Moment.locale("zh-cn")
     },
     methods: {
       downloadFile(id) {
@@ -153,13 +154,13 @@
         this.folderID = path
         GetList(path).then(res => {
           this.dataList = [];
-          res.file.forEach(item => {
+          res.files.forEach(item => {
             if (item.type === FileTypeFolder) {
               this.dataList.push({
                 id: item.id,
                 type: item.type,
                 name: item.name,
-                update_at: item.update_at
+                updated_at: item.updated_at
               })
             } else {
               this.dataList.push({
@@ -167,7 +168,7 @@
                 type: item.type,
                 name: item.name,
                 size: item.file_info.size,
-                update_at: item.update_at
+                updated_at: item.updated_at
               })
             }
           });
