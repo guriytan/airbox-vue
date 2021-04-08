@@ -93,7 +93,7 @@
   import Moment from 'moment'
   import {Delete, GetList, GetShareLink} from "@/utils/request";
   import bytesToSize from "@/utils/capacity"
-  import {EncodeLink} from "@/utils/validate";
+  import {EncodeLink, GetDomain} from "@/utils/validate";
   import {FileTypeFolder, OperationTypeMove} from "@/utils/type";
 
   export default {
@@ -193,7 +193,7 @@
         GetShareLink(id).then(response => {
           let link = EncodeLink(response.link)
           this.shareObj.visible = true;
-          this.shareObj.link = defaultSettings.website + "#/share?link=" + link;
+          this.shareObj.link = GetDomain(document.URL) + "/#/share?link=" + link;
         })
       },
       showRenameDialog(id, index, name, folder) {

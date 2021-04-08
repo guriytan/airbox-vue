@@ -10,6 +10,11 @@ export function isExternal(path) {
   return /^(https?:|mailto:|tel:)/.test(path)
 }
 
+const pattern = /^(http[s]?:\/\/)[^\s/]+/
+export function GetDomain(path) {
+  return pattern.exec(path).shift()
+}
+
 let Base64 = require('js-base64').Base64
 
 export function EncodeLink(link) {

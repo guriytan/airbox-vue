@@ -2,7 +2,6 @@ module.exports = {
 
   title: 'AirBox',
   port: 9528,
-  website: "http://cloud.guriytan.cn/",
 
   /**
    * @type {boolean} true | false

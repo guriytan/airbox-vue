@@ -26,7 +26,7 @@
 <script>
   import defaultSettings from "@/settings";
   import {GetShareLink} from "@/utils/request";
-  import {EncodeLink} from "@/utils/validate";
+  import {EncodeLink, GetDomain} from "@/utils/validate";
 
   export default {
     name: "Preview",
@@ -62,7 +62,7 @@
         GetShareLink(this.id).then(response => {
           let link = EncodeLink(response.link)
           this.shareObj.visible = true;
-          this.shareObj.link = defaultSettings.website + "#/share?link=" + link;
+          this.shareObj.link = GetDomain(document.URL) + "/#/share?link=" + link;
         })
       },
       hideShareDialog() {

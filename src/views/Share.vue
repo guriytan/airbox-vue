@@ -3,7 +3,7 @@
     <el-col :offset="16">
       <el-card class="title-card" shadow="hover">
         <router-link :to="{path:'/'}">
-          <img src="../../static/logo.png" class="logo">
+          <img src="../../static/logo.png" class="logo" alt="">
         </router-link>
         <span class="title">分享文件</span>
       </el-card>
@@ -45,8 +45,7 @@
     mounted() {
       let share = DecodeLink(this.$route.query.link)
       if (share) {
-        this.link = defaultSettings.website + defaultSettings.baseAPI + "/info/share?link=" + share
-        // this.link = defaultSettings.baseAPI + "/info/share?link=" + share
+        this.link = defaultSettings.baseAPI + "/info/share?link=" + share
       }
     },
     methods: {
