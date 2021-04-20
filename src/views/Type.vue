@@ -15,7 +15,7 @@
         </el-breadcrumb>
       </el-card>
       <el-card class="files-card">
-        <el-table :data="tableData" class="files-table" fit stripe max-height="450" v-loading="loading">
+        <el-table :data="tableData" class="files-table" fit stripe max-height="450" v-loading="loading" v-el-table-infinite-scroll="loadMore">
           <el-table-column prop="icon" label="" width="50">
             <template slot-scope="scope">
               <i :class="'iconfont icon-' + solveIcon()"></i>
@@ -60,14 +60,18 @@
 </template>
 
 <script>
-  import {Delete, GetType} from "@/utils/request";
+import {Delete, GetList, GetType} from "@/utils/request";
   import bytesToSize from "@/utils/capacity";
   import {FileTypeFolder, solveType, solveIcon} from "@/utils/type";
   import {RenameDialog} from "@/views/component";
+  import elTableInfiniteScroll from 'el-table-infinite-scroll';
 
   export default {
     name: 'Type',
     components: {RenameDialog},
+    directives: {
+      'el-table-infinite-scroll': elTableInfiniteScroll
+    },
     data() {
       return {
         type: this.$route.params.id,
@@ -80,12 +84,16 @@
           index: 0
         },
         loading: true, // 表格加载
-        tableData: []
+        tableData: [],
+        pagination: {
+          cursor: 0,
+          limit: 10
+        }
       }
     },
-    mounted() {
-      this.mountData()
-    },
+    // mounted() {
+    //   this.mountData()
+    // },
     methods: {
       solveType() {
         return solveType(this.type)
@@ -95,10 +103,11 @@
       },
       mountData() {
         this.onLoading();
-        GetType("", this.type).then(res => {
+        GetType("", this.type, this.pagination.cursor, this.pagination.limit).then(res => {
           this.tableData.length = 0;
           res.files.forEach(item => {
             this.tableData.push(item)
+            this.pagination.cursor = item.id
           });
           this.hideLoading();
         }).catch(() => {
@@ -144,6 +153,18 @@
         this.renameObj.folder = FileTypeFolder;
         this.renameObj.visible = true
       },
+      loadMore() {
+        this.onLoading();
+        GetType("", this.type, this.pagination.cursor, this.pagination.limit).then(res => {
+          res.files.forEach(item => {
+            this.tableData.push(item)
+            this.pagination.cursor = item.id
+          });
+          this.hideLoading();
+        }).catch(() => {
+          this.hideLoading();
+        })
+      }
     }
   }
 </script>

@@ -81,9 +81,9 @@ normalRequest.interceptors.response.use(
 );
 
 // info
-export function GetList(path) {
+export function GetList(path, cursor, limit) {
   return new Promise(((resolve, reject) => {
-    normalRequest.get("/info/list", {params: {father_id: path}}).then(response => {
+    normalRequest.get("/info/list", {params: {father_id: path, cursor: cursor, limit: limit}}).then(response => {
       resolve(response)
     }).catch(() => {
       reject()
@@ -99,9 +99,9 @@ export function GetUserInfo() {
   }))
 }
 
-export function GetType(fid, type) {
+export function GetType(fid, type, cursor, limit) {
   return new Promise((resolve, reject) => {
-    normalRequest.get("/info/type", {params: {father_id: fid, type: type}}).then(response => {
+    normalRequest.get("/info/type", {params: {father_id: fid, type: type, cursor: cursor, limit: limit}}).then(response => {
       resolve(response)
     }).catch(() => {
       reject()

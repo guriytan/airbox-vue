@@ -17,9 +17,9 @@
         </el-breadcrumb>
       </el-card>
       <el-card class="files-card">
-        <el-table :data="dataList" class="files-table" fit stripe max-height="450" v-loading="loading"
+        <el-table :data="dataList" class="files-table" fit stripe max-height="450" height="450" v-loading="loading"
                   @sort-change='sortData' :default-sort="{prop: 'UpdatedAt', order: 'descending'}"
-                  @selection-change="selectChange">
+                  @selection-change="selectChange" v-el-table-infinite-scroll="loadMore">
           <el-table-column type="selection" width="50"></el-table-column>
           <el-table-column prop="icon" label="" width="50">
             <template slot-scope="scope">
@@ -95,6 +95,7 @@
   import bytesToSize from "@/utils/capacity"
   import {EncodeLink, GetDomain} from "@/utils/validate";
   import {FileTypeFolder, OperationTypeMove} from "@/utils/type";
+  import elTableInfiniteScroll from 'el-table-infinite-scroll';
 
   export default {
     name: 'Files',
@@ -106,6 +107,9 @@
       Upload: () => import("@/views/component/Upload"),
       CopyOrMove: () => import("@/views/component/CopyOrMove"),
       Tools: () => import("@/views/component/Tools")
+    },
+    directives: {
+      'el-table-infinite-scroll': elTableInfiniteScroll
     },
     data() {
       return {
@@ -135,11 +139,12 @@
         dataList: [], // 表格数据
         paths: [], // 目录路径
         selectToggle: true,
-        select: [] // 选择的文件列表
+        select: [], // 选择的文件列表
+        pagination: {
+          cursor: 0,
+          limit: 10
+        }
       }
-    },
-    mounted() {
-      this.mountData()
     },
     methods: {
       downloadFile(id) {
@@ -148,10 +153,10 @@
         elemIF.style.display = 'none'
         document.body.appendChild(elemIF)
       },
-      mountData(fid, name, index) {
+      mountData(fid, cursor, name, index) {
         this.onLoading();
         this.folderID = fid
-        GetList(fid).then(res => {
+        GetList(fid, cursor, this.pagination.limit).then(res => {
           this.dataList = [];
           res.files.forEach(item => {
             this.dataList.push({
@@ -161,6 +166,7 @@
               size: item.file_info.size,
               updated_at: item.updated_at
             })
+            this.pagination.cursor = item.id
           });
           this.hideLoading();
         }).catch(() => {
@@ -283,6 +289,24 @@
       },
       isFolder(type){
         return type === FileTypeFolder
+      },
+      loadMore() {
+        this.onLoading();
+        GetList(this.folderID, this.pagination.cursor, this.pagination.limit).then(res => {
+          res.files.forEach(item => {
+            this.dataList.push({
+              id: item.id,
+              type: item.type,
+              name: item.name,
+              size: item.file_info.size,
+              updated_at: item.updated_at
+            })
+            this.pagination.cursor = item.id
+          });
+          this.hideLoading();
+        }).catch(() => {
+          this.hideLoading();
+        })
       }
     }
   }
